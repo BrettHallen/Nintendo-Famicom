@@ -1,0 +1,219 @@
+[
+  {
+    "name": "Nintendo Famicom Keyboard (HVC-007)",
+    "author": "Brett Hallen",
+    "switchMount": "cherry",
+    "switchBrand": "cherry",
+    "pcb": true
+  },
+  [
+    {
+      "x": 0.25,
+      "c": "#AA4346",
+      "a": 7,
+      "f": 7,
+      "w": 2
+    },
+    "F1",
+    {
+      "w": 2
+    },
+    "F2",
+    {
+      "w": 2
+    },
+    "F3",
+    {
+      "w": 2
+    },
+    "F4",
+    {
+      "w": 2
+    },
+    "F5",
+    {
+      "w": 2
+    },
+    "F6",
+    {
+      "w": 2
+    },
+    "F7",
+    {
+      "w": 2
+    },
+    "F8"
+  ],
+  [
+    {
+      "x": 0.75,
+      "c": "#cccccc",
+      "a": 4,
+      "f": 3
+    },
+    "\n\n\n\n\n\n1\nァ\n！\n\nア",
+    "\n\n\n\n\n\n２\nィ\n”\n\nイ",
+    "\n\n\n\n\n\n３\nゥ\n＃\n\nウ",
+    "\n\n\n\n\n\n４\nェ\n＄\n\nエ",
+    "\n\n\n\n\n\n５\nオ\n％\n\nオ",
+    "\n\n\n\n\n\n６\nナ\n＆",
+    "\n\n\n\n\n\n７\nニ\n’",
+    "\n\n\n\n\n\n８\nヌ\n(",
+    "\n\n\n\n\n\n9\n\n)\n\nネ",
+    "\n\n\n\n\n\n0\n\n\n\nノ",
+    "\n\n\n\n\n\n-\n\n=\n\nラ",
+    "\n\n\n\n\n\n^\n\n\n\nリ",
+    "\n\n\n\n\n\n¥\n\n\n\nル",
+    {
+      "a": 7
+    },
+    "STOP"
+  ],
+  [
+    {
+      "y": -0.5,
+      "x": 16,
+      "a": 5
+    },
+    "CLR\nHOME",
+    {
+      "a": 7
+    },
+    "INS",
+    "DEL"
+  ],
+  [
+    {
+      "y": -0.5,
+      "x": 0.25
+    },
+    "ESC",
+    {
+      "a": 4
+    },
+    "\n\n\n\n\n\nQ\n\n\n\nカ",
+    "\n\n\n\n\n\nW\n\n\n\nキ",
+    "\n\n\n\n\n\nE\n\n\n\nク",
+    "\n\n\n\n\n\nR\n\n\n\nケ",
+    "\n\n\n\n\n\nT\n\n\n\nコ",
+    "\n\n\n\n\n\nY\nパ\n\n\nハ",
+    "\n\n\n\n\n\nU\nピ\n\n\nヒ",
+    "\n\n\n\n\n\nI\nプ\n\n\nフ",
+    "\n\n\n\n\n\nO\nペ\n\n\nヘ",
+    "\n\n\n\n\n\nP\nポ\n\n\nホ",
+    "\n\n\n\n\n\n@\n\n\n\nレ",
+    "\n\n\n\n\n\n[\n「\n\n\nロ",
+    {
+      "c": "#AA4346",
+      "a": 7,
+      "f": 7,
+      "w": 2
+    },
+    "RETURN"
+  ],
+  [
+    {
+      "y": -0.5,
+      "x": 16.5,
+      "w": 2
+    },
+    "<i class='fa fa-arrow-up'></i>"
+  ],
+  [
+    {
+      "y": -0.5,
+      "x": 0.5,
+      "c": "#cccccc",
+      "f": 3
+    },
+    "CTR",
+    {
+      "a": 4
+    },
+    "\n\n\n\n\n\nA\n\n\n\nサ",
+    "\n\n\n\n\n\nS\n\n\n\nシ",
+    "\n\n\n\n\n\nD\n\n\n\nス",
+    "\n\n\n\n\n\nF\n\n\n\nセ",
+    "\n\n\n\n\n\nG\n\n\n\nソ",
+    "\n\n\n\n\n\nH\n\n\n\nマ",
+    "\n\n\n\n\n\nJ\n\n\n\nミ",
+    "\n\n\n\n\n\nK\n\n\n\nム",
+    "\n\n\n\n\n\nL\n\n\n\nメ",
+    "\n\n\n\n\n\n；\n\n＋\n\nモ",
+    "\n\n\n\n\n\n：\n\n＊\n\nー",
+    "\n\n\n\n\n\n]\n」\n\n\n。",
+    {
+      "a": 7
+    },
+    "カナ"
+  ],
+  [
+    {
+      "y": -0.5,
+      "x": 15.5,
+      "c": "#AA4346",
+      "f": 7,
+      "w": 2
+    },
+    "<i class='fa fa-arrow-left'></i>",
+    {
+      "w": 2
+    },
+    "<i class='fa fa-arrow-right'></i>"
+  ],
+  [
+    {
+      "y": -0.5,
+      "w": 2
+    },
+    "SHIFT",
+    {
+      "c": "#cccccc",
+      "a": 4,
+      "f": 3
+    },
+    "\n\n\n\n\n\nZ\n\n\n\nタ",
+    "\n\n\n\n\n\nX\n\n\n\nチ",
+    "\n\n\n\n\n\nC\nッ\n\n\nツ",
+    "\n\n\n\n\n\nV\n\n\n\nテ",
+    "\n\n\n\n\n\nB\n\n\n\nト",
+    "\n\n\n\n\n\nN\nャ\n\n\nヤ",
+    "\n\n\n\n\n\nM\nュ\n\n\nユ",
+    "\n\n\n\n\n\n,\nョ\n＜\n\nヨ",
+    "\n\n\n\n\n\n.\n\n＞\n\nワ",
+    "\n\n\n\n\n\n/\n\n？\n\nヲ",
+    {
+      "a": 5
+    },
+    "⌴\nン",
+    {
+      "c": "#AA4346",
+      "a": 7,
+      "f": 7,
+      "w": 2
+    },
+    "SHIFT"
+  ],
+  [
+    {
+      "y": -0.5,
+      "x": 16.5,
+      "w": 2
+    },
+    "<i class='fa fa-arrow-down'></i>"
+  ],
+  [
+    {
+      "y": -0.5,
+      "x": 3,
+      "c": "#cccccc",
+      "f": 3
+    },
+    "GRPH",
+    {
+      "c": "#AA4346",
+      "w": 7
+    },
+    ""
+  ]
+]
