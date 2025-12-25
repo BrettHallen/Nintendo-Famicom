@@ -8376,7 +8376,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "21b774c6-cd2d-454c-bef3-e797c709d629")
-		(property "Reference" "J1"
+		(property "Reference" "P4"
 			(at 321.31 156.8449 0)
 			(effects
 				(font
@@ -8430,7 +8430,7 @@
 		(instances
 			(project ""
 				(path "/83e19011-2990-4c2b-8979-c23840ecf61d"
-					(reference "J1")
+					(reference "P4")
 					(unit 1)
 				)
 			)
@@ -8955,7 +8955,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_DIP:DIP-16_W7.62mm"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 321.31 142.24 0)
 			(effects
 				(font
@@ -9129,7 +9129,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Package_DIP:DIP-16_W7.62mm"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 69.85 264.16 0)
 			(effects
 				(font
@@ -10670,7 +10670,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6ca4d566-77ad-4c1d-a993-89a1f3458d75")
-		(property "Reference" "J3"
+		(property "Reference" "P5"
 			(at 341.63 117.4749 0)
 			(effects
 				(font
@@ -10724,7 +10724,7 @@
 		(instances
 			(project ""
 				(path "/83e19011-2990-4c2b-8979-c23840ecf61d"
-					(reference "J3")
+					(reference "P5")
 					(unit 1)
 				)
 			)
@@ -12462,7 +12462,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_DIP:DIP-16_W7.62mm"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 93.98 276.86 0)
 			(effects
 				(font
@@ -12975,7 +12975,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_DIP:DIP-16_W7.62mm"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 287.02 191.77 0)
 			(effects
 				(font
@@ -13079,7 +13079,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_DIP:DIP-16_W7.62mm"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 274.32 157.48 0)
 			(effects
 				(font
@@ -13713,7 +13713,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_DIP:DIP-16_W7.62mm"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 93.98 260.35 0)
 			(effects
 				(font
@@ -15009,7 +15009,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_DIP:DIP-16_W7.62mm"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 288.29 142.24 0)
 			(effects
 				(font
