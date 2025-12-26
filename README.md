@@ -14,4 +14,7 @@ Copy of the schematics from [Archive](https://archive.org/details/fc-factory-cpu
 > I do not know who the original creators of these schematics are, unfortunately.<br>
 
 ## [Keyboard HVC-007](/Keyboard_HVC-007)
-Redesign of the keyboard used with Family BASIC using KiCad.
+Redesign of the keyboard used with Family BASIC using KiCad.<br>
+
+![3D view of PCB](/Keyboard_HVC-007/Images/Nintendo_Famicom_Keyboard_HVC-007_3D.png)
+
