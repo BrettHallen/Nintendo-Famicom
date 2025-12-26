@@ -25,7 +25,7 @@ SW16,1,^,SW_Cherry_MX_PCB_1.00u,,,,tht,"Push button switch, normally open, two p
 SW17,1,F6,SW_Cherry_MX_PCB_2.00u,,,,tht,"Push button switch, normally open, two pins, 45° tilted",,
 SW18,1,O,SW_Cherry_MX_PCB_1.00u,,,,tht,"Push button switch, normally open, two pins, 45° tilted",,
 SW19,1,L,SW_Cherry_MX_PCB_1.00u,,,,tht,"Push button switch, normally open, two pins, 45° tilted",,
-SW2,1,RET,SW_Cherry_MX_PCB_2.00u,,,,tht,"Push button switch, normally open, two pins, 45° tilted",,
+SW2,1,RETURN,SW_Cherry_MX_PCB_2.00u,,,,tht,"Push button switch, normally open, two pins, 45° tilted",,
 SW20,1,K,SW_Cherry_MX_PCB_1.00u,,,,tht,"Push button switch, normally open, two pins, 45° tilted",,
 SW21,1,",",SW_Cherry_MX_PCB_1.00u,,,,tht,"Push button switch, normally open, two pins, 45° tilted",,
 SW22,1,.,SW_Cherry_MX_PCB_1.00u,,,,tht,"Push button switch, normally open, two pins, 45° tilted",,
