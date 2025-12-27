@@ -20,5 +20,6 @@ Redesign of the keyboard used with Family BASIC using KiCad.<br>
 
 ## [Family BASIC](/Family_BASIC)
 Designing cartridge with 8KB RAM.<br>
+- [Disassembly](https://github.com/micahcowan/fbdasm)
 - [Cartridge schematics](http://cmpslv3.stars.ne.jp/Famic/Fambas.htm)
 - [Leaded Solder's investigation](https://www.leadedsolder.com/2025/03/11/family-basic-space-arcade-game-programming.html)
