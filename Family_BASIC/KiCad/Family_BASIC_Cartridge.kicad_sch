@@ -4711,12 +4711,6 @@
 		(uuid "34512b9b-13e9-4621-aa7c-3de99bf9496f")
 	)
 	(junction
-		(at 205.74 123.19)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "3742cf1d-5502-4bf1-84ba-6f6b848cd8d8")
-	)
-	(junction
 		(at 166.37 104.14)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4747,12 +4741,6 @@
 		(uuid "7517ef44-072d-4ccd-8125-20cf2e86d082")
 	)
 	(junction
-		(at 168.91 123.19)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "94cca0bd-a77f-4ecc-8005-d677545c73b8")
-	)
-	(junction
 		(at 73.66 193.04)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4765,6 +4753,12 @@
 		(uuid "9d965081-bd40-4ebd-9d92-56abf34253c5")
 	)
 	(junction
+		(at 167.64 130.81)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "a06219ea-f380-4776-b7dc-9ee2fd0fda82")
+	)
+	(junction
 		(at 166.37 21.59)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4775,6 +4769,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b269ca81-9a85-45b3-beb1-126a509594b9")
+	)
+	(junction
+		(at 205.74 130.81)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "b5e6aede-bcc8-45c6-ae0d-7e13c335b435")
 	)
 	(junction
 		(at 101.6 130.81)
@@ -4817,6 +4817,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "ef849eee-a78b-4817-a2fd-50369c4da303")
+	)
+	(junction
+		(at 167.64 123.19)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f5304f94-2150-4129-b2ac-90ba5c1dc288")
 	)
 	(junction
 		(at 60.96 167.64)
@@ -6298,16 +6304,6 @@
 	)
 	(wire
 		(pts
-			(xy 205.74 123.19) (xy 243.84 123.19)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1889d7a2-a4a5-4cb2-9ebf-1397fdba0f73")
-	)
-	(wire
-		(pts
 			(xy 125.73 53.34) (xy 134.62 53.34)
 		)
 		(stroke
@@ -6658,6 +6654,16 @@
 	)
 	(wire
 		(pts
+			(xy 167.64 130.81) (xy 205.74 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "377d5f50-7f8c-43fd-b280-21acc2fa8cc0")
+	)
+	(wire
+		(pts
 			(xy 22.86 99.06) (xy 34.29 99.06)
 		)
 		(stroke
@@ -6836,6 +6842,16 @@
 		)
 		(uuid "4889c5ce-9103-45a0-8ff2-e5abe161bd5e")
 	)
+	(wire
+		(pts
+			(xy 167.64 123.19) (xy 168.91 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "48c3a439-5d2f-4187-8a8e-ede2728d6c58")
+	)
 	(bus
 		(pts
 			(xy 20.32 104.14) (xy 20.32 107.95)
@@ -6858,7 +6874,7 @@
 	)
 	(wire
 		(pts
-			(xy 243.84 106.68) (xy 243.84 123.19)
+			(xy 243.84 106.68) (xy 243.84 130.81)
 		)
 		(stroke
 			(width 0)
@@ -6875,16 +6891,6 @@
 			(type default)
 		)
 		(uuid "4df39263-4f4c-446b-ba96-e35efb0f9f02")
-	)
-	(wire
-		(pts
-			(xy 168.91 130.81) (xy 168.91 123.19)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4e7751f6-cbfc-4478-82d6-2a756fdc0ddd")
 	)
 	(bus
 		(pts
@@ -7065,6 +7071,16 @@
 			(type default)
 		)
 		(uuid "5df072be-2067-48b4-9ce5-4af372c71cd9")
+	)
+	(wire
+		(pts
+			(xy 205.74 130.81) (xy 243.84 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5e978c8a-ab0d-4841-b51e-c14ae2672fc0")
 	)
 	(wire
 		(pts
@@ -7458,7 +7474,17 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 130.81) (xy 168.91 130.81)
+			(xy 205.74 127) (xy 205.74 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7cabb60f-95a5-43ff-8911-e2c4fae60b1c")
+	)
+	(wire
+		(pts
+			(xy 144.78 130.81) (xy 167.64 130.81)
 		)
 		(stroke
 			(width 0)
@@ -7488,7 +7514,7 @@
 	)
 	(wire
 		(pts
-			(xy 166.37 123.19) (xy 168.91 123.19)
+			(xy 166.37 123.19) (xy 167.64 123.19)
 		)
 		(stroke
 			(width 0)
@@ -7808,6 +7834,16 @@
 	)
 	(wire
 		(pts
+			(xy 167.64 130.81) (xy 167.64 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9c2f7a46-3950-43a2-ad94-52aed5005c3e")
+	)
+	(wire
+		(pts
 			(xy 125.73 55.88) (xy 134.62 55.88)
 		)
 		(stroke
@@ -7915,16 +7951,6 @@
 			(type default)
 		)
 		(uuid "a72faa0a-4677-4f95-b526-256dcbbca80f")
-	)
-	(wire
-		(pts
-			(xy 168.91 123.19) (xy 205.74 123.19)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a79aef05-598a-450c-8025-fe7dabe71430")
 	)
 	(bus
 		(pts
@@ -8345,16 +8371,6 @@
 			(type default)
 		)
 		(uuid "d2198424-c79a-4709-9025-d8527e536775")
-	)
-	(wire
-		(pts
-			(xy 205.74 123.19) (xy 205.74 119.38)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d2eddc3b-fd1b-441e-bef7-f2d51373d76c")
 	)
 	(wire
 		(pts
@@ -8787,7 +8803,7 @@
 		(uuid "08af0d04-5012-40cd-bea7-725c22521b2c")
 	)
 	(label "GND"
-		(at 184.15 123.19 0)
+		(at 184.15 130.81 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8987,7 +9003,7 @@
 		(uuid "2e945ec2-64a5-4adc-9444-e1be219199c5")
 	)
 	(label "GND"
-		(at 50.8 130.81 0)
+		(at 53.34 130.81 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -9697,7 +9713,7 @@
 		(uuid "ac2a5eba-5c31-4781-abe2-a9d2dd79a7a4")
 	)
 	(label "GND"
-		(at 101.6 96.52 0)
+		(at 101.6 101.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10067,7 +10083,7 @@
 		(uuid "e9e057ad-30b6-4296-9515-88d7a10cf1d0")
 	)
 	(label "GND"
-		(at 144.78 93.98 0)
+		(at 144.78 101.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10449,7 +10465,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
 			(at 177.8 105.918 90)
 			(effects
 				(font
@@ -10734,7 +10750,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
 			(at 177.8 100.838 90)
 			(effects
 				(font
@@ -11065,16 +11081,16 @@
 	)
 	(symbol
 		(lib_id "Switch:SW_DIP_x02")
-		(at 168.91 115.57 90)
+		(at 166.37 115.57 270)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "7c5930be-baa2-4840-a112-00b2f1db9e52")
 		(property "Reference" "SW2"
-			(at 172.72 114.2999 90)
+			(at 162.56 114.2999 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11083,7 +11099,7 @@
 			)
 		)
 		(property "Value" "RAM BANK SW"
-			(at 172.72 116.8399 90)
+			(at 162.56 116.8399 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11091,8 +11107,8 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
-			(at 168.91 115.57 0)
+		(property "Footprint" "Button_Switch_THT:SW_DIP_SPSTx02_Slide_9.78x7.26mm_W7.62mm_P2.54mm"
+			(at 166.37 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11101,7 +11117,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 168.91 115.57 0)
+			(at 166.37 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11110,7 +11126,7 @@
 			)
 		)
 		(property "Description" "2x DIP Switch, Single Pole Single Throw (SPST) switch, small symbol"
-			(at 168.91 115.57 0)
+			(at 166.37 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11131,7 +11147,7 @@
 			(uuid "fe861e0b-305d-4b53-ac19-af114801e588")
 		)
 		(instances
-			(project ""
+			(project "Family_BASIC_Cartridge"
 				(path "/d387318e-3d77-436c-8e35-eead167b1d94"
 					(reference "SW2")
 					(unit 1)
@@ -11305,7 +11321,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "D"
+		(property "Value" "1N4148"
 			(at 208.28 109.2199 90)
 			(effects
 				(font
@@ -11314,7 +11330,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal"
 			(at 205.74 107.95 0)
 			(effects
 				(font
@@ -11393,7 +11409,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "3V"
+		(property "Value" "1.5V"
 			(at 209.55 116.2684 0)
 			(effects
 				(font
@@ -11402,7 +11418,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Battery:BatteryHolder_Multicomp_BC-2001_1x2032"
 			(at 205.74 115.316 90)
 			(effects
 				(font
@@ -11555,22 +11571,22 @@
 		(fields_autoplaced yes)
 		(uuid "b971da4e-ce7b-4653-8846-75adc0806298")
 		(property "Reference" "D2"
-			(at 198.12 107.95 0)
+			(at 198.12 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "D"
-			(at 198.12 105.41 0)
+		(property "Value" "1N4148"
+			(at 198.12 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal"
 			(at 198.12 101.6 0)
 			(effects
 				(font
@@ -11900,7 +11916,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
 			(at 211.328 90.17 90)
 			(effects
 				(font
@@ -11968,7 +11984,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Button_Switch_THT:SW_E-Switch_EG1224_SPDT_Angled"
 			(at 232.41 86.36 0)
 			(effects
 				(font
@@ -12107,6 +12123,76 @@
 				(path "/d387318e-3d77-436c-8e35-eead167b1d94"
 					(reference "IC3")
 					(unit 2)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:Battery_Cell")
+		(at 205.74 124.46 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f2fbc854-8e46-4984-aa36-e4802bf71928")
+		(property "Reference" "BT2"
+			(at 209.55 121.3484 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1.5V"
+			(at 209.55 123.8884 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Battery:BatteryHolder_Multicomp_BC-2001_1x2032"
+			(at 205.74 122.936 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 205.74 122.936 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Single-cell battery"
+			(at 205.74 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "a7d273af-b694-444f-8d3b-234ce629be56")
+		)
+		(pin "1"
+			(uuid "55990af0-e267-4c5a-9629-f4c1f746c09d")
+		)
+		(instances
+			(project "Family_BASIC_Cartridge"
+				(path "/d387318e-3d77-436c-8e35-eead167b1d94"
+					(reference "BT2")
+					(unit 1)
 				)
 			)
 		)
