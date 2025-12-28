@@ -4461,23 +4461,23 @@
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "SW"
-				(at 0 5.08 0)
+			(property "Reference" "SW1"
+				(at 0 -8.89 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 				)
 			)
-			(property "Value" "SW_SPDT"
-				(at 0 -5.08 0)
+			(property "Value" "BACKUP SW"
+				(at 0 -6.35 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 				)
 			)
-			(property "Footprint" ""
+			(property "Footprint" "Button_Switch_THT:SW_E-Switch_EG1224_SPDT_Angled"
 				(at 0 0 0)
 				(effects
 					(font
@@ -4583,6 +4583,24 @@
 						)
 					)
 					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 0 5.08 270)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4759,6 +4777,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "7517ef44-072d-4ccd-8125-20cf2e86d082")
+	)
+	(junction
+		(at 232.41 130.81)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "8baaefb9-cf58-4249-853b-162002ac9205")
 	)
 	(junction
 		(at 73.66 193.04)
@@ -7094,7 +7118,7 @@
 	)
 	(wire
 		(pts
-			(xy 205.74 130.81) (xy 243.84 130.81)
+			(xy 205.74 130.81) (xy 232.41 130.81)
 		)
 		(stroke
 			(width 0)
@@ -7771,6 +7795,16 @@
 			(type default)
 		)
 		(uuid "9744dbb3-4b7e-4e1b-9cc7-c2648737754b")
+	)
+	(wire
+		(pts
+			(xy 232.41 91.44) (xy 232.41 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "97966501-248e-4db1-a69f-067101a85185")
 	)
 	(wire
 		(pts
@@ -8481,6 +8515,16 @@
 			(type default)
 		)
 		(uuid "de8905cf-7859-4f26-bbc8-259aff151e25")
+	)
+	(wire
+		(pts
+			(xy 232.41 130.81) (xy 243.84 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e02ddfa6-5a7e-42b6-bf5b-86ab1a40a2e6")
 	)
 	(wire
 		(pts
@@ -12039,6 +12083,9 @@
 		)
 		(pin "2"
 			(uuid "5bf66c23-35f1-47c9-8aa4-f261d7bda714")
+		)
+		(pin "4"
+			(uuid "eaa70368-999a-40f3-a0ec-db87e43a6be1")
 		)
 		(instances
 			(project ""

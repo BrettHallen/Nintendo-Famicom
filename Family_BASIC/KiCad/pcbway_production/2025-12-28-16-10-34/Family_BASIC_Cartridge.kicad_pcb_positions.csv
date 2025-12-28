@@ -1,0 +1,20 @@
+﻿pos_x,pos_y,rotation,side,designator,mpn,pack,footprint,value,mount_type
+101.28,-77.8874,0.0,top,BT1,,,BatteryHolder_Multicomp_BC-2001_1x2032,1.5V,smt
+133.03,-77.8874,0.0,top,BT2,,,BatteryHolder_Multicomp_BC-2001_1x2032,1.5V,smt
+133.03,-105.125389,-90.0,top,C1,,,C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal,68pF,tht
+110.17,-127.9254,90.0,top,C2,,,C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal,100nF,tht
+110.17,-112.6854,90.0,top,C3,,,C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal,100nF,tht
+59.37,-103.7354,90.0,top,C4,,,C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal,100nF,tht
+59.37,-127.8654,90.0,top,C5,,,C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal,100nF,tht
+63.18,-83.4754,0.0,top,D1,,,D_DO-35_SOD27_P7.62mm_Horizontal,1N4148,tht
+63.18,-79.6654,0.0,top,D2,,,D_DO-35_SOD27_P7.62mm_Horizontal,1N4148,tht
+63.854,-137.1622,0.0,top,H1,,,Famicom_Cartridge_Edge_Connector_(long_legs),Famicom_Cartridge_Edge,smt
+63.18,-107.6054,90.0,top,IC1,,,DIP-28_W15.24mm,Working RAM (62256),tht
+63.18,-131.7354,90.0,top,IC2,,,DIP-28_W15.24mm,PRG ROM (27256),tht
+129.22,-105.0654,-90.0,top,IC3,,,DIP-14_W7.62mm,74HCT20,tht
+113.98,-131.7354,90.0,top,IC4,,,DIP-28_W15.24mm,CHR ROM (27C64),tht
+63.18,-87.2854,0.0,top,R1,,,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,5.1KΩ,tht
+63.18,-111.4154,0.0,top,R2,,,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,10KΩ,tht
+75.88,-87.2854,0.0,top,R3,,,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,10KΩ,tht
+71.12,-73.66,180.0,top,SW1,,,SW_E-Switch_EG1224_SPDT_Angled,BACKUP SW,tht
+120.838,-94.1434,180.0,top,SW2,,,SW_DIP_SPSTx02_Slide_9.78x7.26mm_W7.62mm_P2.54mm,RAM BANK SW,tht
