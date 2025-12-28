@@ -4680,6 +4680,26 @@
 		)
 		(uuid "537566be-54b7-4203-824a-065261556744")
 	)
+	(text_box "Family BASIC V3 is hard-coded for a maximum of 4KB:\n\nbasicProgram .eq $6006 ; The start of the BASIC program in memory\nbgGetRam     .eq $6c00 {addr/1024} ; region to save bg data with BGGET\nmemoryTop    .eq $6fff ; What FRETOP is set to by default\n\nPossible to increase to 8KB by patching those constants?\n\nbgGetRam     .eq $7c00 {addr/1024} ; region to save bg data with BGGET\nmemoryTop    .eq $7fff ; What FRETOP is set to by default"
+		(exclude_from_sim no)
+		(at 184.15 139.7 0)
+		(size 91.44 24.13)
+		(margins 0.9525 0.9525 0.9525 0.9525)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "8684ac37-6bdf-4c82-be72-dbf10c3f1967")
+	)
 	(junction
 		(at 60.96 193.04)
 		(diameter 0)
