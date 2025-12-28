@@ -23,3 +23,6 @@ Designing cartridge with 8KB RAM.<br>
 - [Disassembly](https://github.com/micahcowan/fbdasm)
 - [Cartridge schematics](http://cmpslv3.stars.ne.jp/Famic/Fambas.htm)
 - [Leaded Solder's investigation](https://www.leadedsolder.com/2025/03/11/family-basic-space-arcade-game-programming.html)
+
+![3D view of PCB](/Family_BASIC/Images/Nintendo_Famicom_Family_BASIC_3_3D.png)
+
