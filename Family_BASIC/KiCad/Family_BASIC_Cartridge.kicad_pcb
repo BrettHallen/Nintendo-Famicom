@@ -6889,8 +6889,8 @@
 		(uuid "274d5d07-684b-4ac2-947f-36c7d28a0424")
 	)
 	(gr_rect
-		(start 140.765 98.044389)
-		(end 139.265 96.544389)
+		(start 139.265 96.544389)
+		(end 140.765 98.044389)
 		(stroke
 			(width 0.2)
 			(type solid)
@@ -6900,8 +6900,8 @@
 		(uuid "2b912a96-cbb0-4d6f-b69b-03fd616958b1")
 	)
 	(gr_rect
-		(start 129.347 98.056389)
-		(end 127.847 96.556389)
+		(start 127.847 96.556389)
+		(end 129.347 98.056389)
 		(stroke
 			(width 0.2)
 			(type solid)
@@ -6922,8 +6922,8 @@
 		(uuid "38d929d3-09ce-4d40-b1b8-a46f41e8b304")
 	)
 	(gr_rect
-		(start 140.741 92.365389)
-		(end 139.241 90.865389)
+		(start 139.241 90.865389)
+		(end 140.741 92.365389)
 		(stroke
 			(width 0.2)
 			(type solid)
@@ -6955,8 +6955,8 @@
 		(uuid "7e85a992-9c46-40fb-b755-ac3517faed4e")
 	)
 	(gr_rect
-		(start 139.241 96.290389)
-		(end 136.241 94.790389)
+		(start 136.241 94.790389)
+		(end 139.241 96.290389)
 		(stroke
 			(width 0.2)
 			(type solid)
@@ -6966,8 +6966,8 @@
 		(uuid "8c1c08d5-815c-45e0-a163-32afcdb07153")
 	)
 	(gr_rect
-		(start 140.765 96.290389)
-		(end 139.265 94.790389)
+		(start 139.265 94.790389)
+		(end 140.765 96.290389)
 		(stroke
 			(width 0.2)
 			(type solid)
@@ -6999,8 +6999,8 @@
 		(uuid "b02dad6c-3569-4112-9296-02aa8fa14349")
 	)
 	(gr_rect
-		(start 127.823 98.056389)
-		(end 124.823 96.556389)
+		(start 124.823 96.556389)
+		(end 127.823 98.056389)
 		(stroke
 			(width 0.2)
 			(type solid)
@@ -7021,8 +7021,8 @@
 		(uuid "eae01aba-ef21-4c09-b58a-dcf61312d0e6")
 	)
 	(gr_rect
-		(start 139.217 92.365389)
-		(end 136.217 90.865389)
+		(start 136.217 90.865389)
+		(end 139.217 92.365389)
 		(stroke
 			(width 0.2)
 			(type solid)
@@ -7032,8 +7032,8 @@
 		(uuid "f9d8fdc5-de63-470e-825b-3acd7b041398")
 	)
 	(gr_rect
-		(start 139.241 98.044389)
-		(end 136.241 96.544389)
+		(start 136.241 96.544389)
+		(end 139.241 98.044389)
 		(stroke
 			(width 0.2)
 			(type solid)
@@ -7239,6 +7239,18 @@
 		(layer "Edge.Cuts")
 		(uuid "ff7909ac-6903-435a-9374-765b22d39a58")
 	)
+	(gr_text "Nintendo Family BASIC"
+		(at 111.567 101.636389 0)
+		(layer "F.SilkS")
+		(uuid "1675a0c6-4b98-475d-8426-3880bdb1e31d")
+		(effects
+			(font
+				(size 2 2)
+				(thickness 0.25)
+			)
+			(justify left bottom)
+		)
+	)
 	(gr_text "OFF"
 		(at 61.529 78.014389 0)
 		(layer "F.SilkS")
@@ -7315,6 +7327,18 @@
 				(bold yes)
 			)
 			(justify left bottom)
+		)
+	)
+	(gr_text "Nintendo Family BASIC, Rev. A\nBrett Hallen, Dec 2025"
+		(at 147.127 87.920389 0)
+		(layer "B.SilkS")
+		(uuid "c912b58d-aa6c-4421-b3fc-afd51ddb5a48")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+			(justify left bottom mirror)
 		)
 	)
 	(segment
