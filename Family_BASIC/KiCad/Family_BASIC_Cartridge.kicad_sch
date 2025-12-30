@@ -6,8 +6,8 @@
 	(paper "A4")
 	(title_block
 		(title "Nintendo Famicom Family BASIC 8KB")
-		(date "27/DEC?2025")
-		(rev "WIP")
+		(date "27/DEC/2025")
+		(rev "A")
 		(company "Brett Hallen")
 	)
 	(lib_symbols
@@ -2464,6 +2464,265 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Jumper:SolderJumper_3_Bridged12"
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(property "Reference" "JP"
+				(at -2.54 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "SolderJumper_3_Bridged12"
+				(at 0 2.794 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "3-pole Solder Jumper, pins 1+2 closed/bridged"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "Solder Jumper SPDT"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "SolderJumper*Bridged12*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "SolderJumper_3_Bridged12_0_1"
+				(polyline
+					(pts
+						(xy -2.54 0) (xy -2.032 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.016 1.016) (xy -1.016 -1.016)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.016 0.508)
+					(end -0.508 -0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(arc
+					(start -1.016 -1.016)
+					(mid -2.0276 0)
+					(end -1.016 1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -1.016 -1.016)
+					(mid -2.0276 0)
+					(end -1.016 1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start -0.508 1.016)
+					(end 0.508 -1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 -1.27) (xy 0 -1.016)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 1.016 1.016)
+					(mid 2.0276 0)
+					(end 1.016 -1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 1.016 1.016)
+					(mid 2.0276 0)
+					(end 1.016 -1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.016 1.016) (xy 1.016 -1.016)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 0) (xy 2.032 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "SolderJumper_3_Bridged12_1_1"
+				(pin passive line
+					(at -5.08 0 0)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 2.54)
+					(name "C"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 0 180)
+					(length 2.54)
+					(name "B"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Memory_EPROM:27C256"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -4648,16 +4907,6 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "WORK IN PROGRESS"
-		(exclude_from_sim no)
-		(at 241.046 174.498 0)
-		(effects
-			(font
-				(size 5 5)
-			)
-		)
-		(uuid "458fb346-7970-4de5-865e-82cfe2c518cd")
-	)
 	(text_box "Unused gate as using 256Kbit ROM rather than two 128Kbit."
 		(exclude_from_sim no)
 		(at 127 189.23 0)
@@ -4678,10 +4927,10 @@
 		)
 		(uuid "4b3ac6c1-8f24-4848-8927-ebd1c1d138dc")
 	)
-	(text_box "8KB working RAM (0x6000-0x7FFF) so 32KB 62256 gives us four possible banks.\nA_{13} and A_{14} are switchable - they are not connected to address bus.\nIf you're not interested in switching banks, using only 8KB, then omit SW2."
+	(text_box "8KB working RAM (0x6000-0x7FFF) so 32KB 62256 gives us four possible banks.\nA_{13} and A_{14} are switchable - they are not connected to address bus.\n\nIf you're not interested in switching banks, using only 8KB, then omit SW2 - A_{13} & A_{14} are pulled high by default.\n\nIf you only want the original 4KB then cut the A_{12}-to-A_{12}EN solder bridge and connect A_{12}EN to GND."
 		(exclude_from_sim no)
-		(at 218.44 40.64 0)
-		(size 46.99 13.97)
+		(at 234.95 17.78 0)
+		(size 46.99 27.94)
 		(margins 0.9525 0.9525 0.9525 0.9525)
 		(stroke
 			(width 0)
@@ -4698,10 +4947,10 @@
 		)
 		(uuid "537566be-54b7-4203-824a-065261556744")
 	)
-	(text_box "Family BASIC V3 is hard-coded for a maximum of 4KB:\n\nbasicProgram .eq $6006 ; The start of the BASIC program in memory\nbgGetRam     .eq $6c00 {addr/1024} ; region to save bg data with BGGET\nmemoryTop    .eq $6fff ; What FRETOP is set to by default\n\nPossible to increase to 8KB by patching those constants?\n\nbgGetRam     .eq $7c00 {addr/1024} ; region to save bg data with BGGET\nmemoryTop    .eq $7fff ; What FRETOP is set to by default"
+	(text_box "Family BASIC V3 is hard-coded for a maximum of 4KB.\n\nSome modification is required to hard coded values in the ROM to increase from 0x6FFF limit to full 0x7FFF."
 		(exclude_from_sim no)
-		(at 184.15 139.7 0)
-		(size 91.44 24.13)
+		(at 144.78 144.78 0)
+		(size 110.49 7.62)
 		(margins 0.9525 0.9525 0.9525 0.9525)
 		(stroke
 			(width 0)
@@ -6048,6 +6297,16 @@
 	)
 	(wire
 		(pts
+			(xy 260.35 58.42) (xy 261.62 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "01e81628-5e20-4747-a5b6-91bb2376bd45")
+	)
+	(wire
+		(pts
 			(xy 22.86 58.42) (xy 34.29 58.42)
 		)
 		(stroke
@@ -6518,6 +6777,16 @@
 	)
 	(wire
 		(pts
+			(xy 246.38 58.42) (xy 250.19 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2687ff44-2576-45e3-92b0-8843b91a90d1")
+	)
+	(wire
+		(pts
 			(xy 39.37 167.64) (xy 60.96 167.64)
 		)
 		(stroke
@@ -6845,6 +7114,16 @@
 			(type default)
 		)
 		(uuid "46efdd3f-4f7b-4722-ade7-1da3a1eb6a14")
+	)
+	(wire
+		(pts
+			(xy 255.27 62.23) (xy 255.27 64.77)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "47261552-123c-4d38-b46a-2e373e83fb51")
 	)
 	(wire
 		(pts
@@ -7928,16 +8207,6 @@
 	)
 	(wire
 		(pts
-			(xy 168.91 76.2) (xy 177.8 76.2)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a0824019-85f6-4b84-9291-cc7785f56fdd")
-	)
-	(wire
-		(pts
 			(xy 209.55 101.6) (xy 209.55 93.98)
 		)
 		(stroke
@@ -8748,6 +9017,16 @@
 	)
 	(wire
 		(pts
+			(xy 168.91 76.2) (xy 177.8 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f7e45e8c-b108-47ab-8856-70fe285aedd5")
+	)
+	(wire
+		(pts
 			(xy 125.73 66.04) (xy 134.62 66.04)
 		)
 		(stroke
@@ -8906,7 +9185,7 @@
 		)
 		(uuid "1175c54b-fc27-4385-b19e-a5cd5bdce7fc")
 	)
-	(label "SWA_{13}"
+	(label "A_{13}SW"
 		(at 170.18 78.74 0)
 		(effects
 			(font
@@ -9005,6 +9284,16 @@
 			(justify left bottom)
 		)
 		(uuid "2590dabe-bba5-4237-8359-74571c490638")
+	)
+	(label "A_{12}EN"
+		(at 170.18 76.2 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "279e00f6-3970-48d1-8cf4-96429717d431")
 	)
 	(label "D_{4}"
 		(at 205.74 55.88 0)
@@ -9376,16 +9665,6 @@
 		)
 		(uuid "6176cbef-6971-45fa-939a-4bda5dede39d")
 	)
-	(label "A_{12}"
-		(at 172.72 76.2 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "6273e961-ddce-417d-881e-b61bd9b11ad9")
-	)
 	(label "A_{4}"
 		(at 85.09 55.88 0)
 		(effects
@@ -9556,7 +9835,7 @@
 		)
 		(uuid "7c18ab47-db86-49be-a2cf-8156d17750ce")
 	)
-	(label "R{slash}_{W}"
+	(label "R{slash}~{W}"
 		(at 26.67 113.03 0)
 		(effects
 			(font
@@ -9656,7 +9935,7 @@
 		)
 		(uuid "8e37de6d-b8b5-497d-8c70-e86da5ed3a17")
 	)
-	(label "SWA_{14}"
+	(label "A_{14}SW"
 		(at 170.18 81.28 0)
 		(effects
 			(font
@@ -9725,6 +10004,16 @@
 			(justify left bottom)
 		)
 		(uuid "a46be3ab-f017-4c00-bc2d-e2a62eaa2b20")
+	)
+	(label "A_{12}EN"
+		(at 255.27 64.77 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "a62261de-732f-4d3b-9bca-7b723a0a3c7f")
 	)
 	(label "PD_{1}"
 		(at 68.58 91.44 0)
@@ -9855,6 +10144,16 @@
 			(justify left bottom)
 		)
 		(uuid "b3c96d8c-5d3f-46d3-a197-a454018e48dd")
+	)
+	(label "A_{12}"
+		(at 246.38 58.42 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b65580c0-f06f-4190-83fa-579ce5777a84")
 	)
 	(label "D_{3}"
 		(at 205.74 53.34 0)
@@ -10265,6 +10564,16 @@
 			(justify left bottom)
 		)
 		(uuid "fcde4677-cb38-415c-9e56-355669ff78f5")
+	)
+	(label "GND"
+		(at 261.62 58.42 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "fe5a0f6a-a604-4d80-b256-5c548326143c")
 	)
 	(symbol
 		(lib_id "Device:C")
@@ -11361,6 +11670,77 @@
 			(project ""
 				(path "/d387318e-3d77-436c-8e35-eead167b1d94"
 					(reference "IC2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_3_Bridged12")
+		(at 255.27 58.42 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "865b7251-6478-4f3e-bd79-250e6a574f2d")
+		(property "Reference" "JP1"
+			(at 255.27 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "A_{12} Enable"
+			(at 255.27 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-3_P1.3mm_Bridged12_RoundedPad1.0x1.5mm"
+			(at 255.27 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 255.27 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "3-pole Solder Jumper, pins 1+2 closed/bridged"
+			(at 255.27 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "3"
+			(uuid "4f40a87b-2c3a-451a-aec8-9b34b5910677")
+		)
+		(pin "1"
+			(uuid "043b6c13-bd78-4441-99ca-977b8cf56963")
+		)
+		(pin "2"
+			(uuid "1d43c2c4-3a56-4868-a258-53c8d708cee5")
+		)
+		(instances
+			(project ""
+				(path "/d387318e-3d77-436c-8e35-eead167b1d94"
+					(reference "JP1")
 					(unit 1)
 				)
 			)
