@@ -1581,7 +1581,7 @@
 		(property "Reference" "C5"
 			(at 10.16 -0.12 180)
 			(layer "F.SilkS")
-			(uuid "bf486fa7-c775-45e2-913c-d723e83ee444")
+			(uuid "cc686c38-8871-4ade-8ee0-94465a2e408a")
 			(effects
 				(font
 					(size 1 1)
@@ -1590,9 +1590,9 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 3.75 0 90)
+			(at 3.740367 -2.189132 90)
 			(layer "F.SilkS")
-			(uuid "bffd39a8-2866-4ab1-9f3c-dd5411d15d71")
+			(uuid "72fda2e8-774a-4042-ba26-de9513ae9def")
 			(effects
 				(font
 					(size 0.8 0.8)
@@ -1604,7 +1604,7 @@
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "54b72b57-6dbc-47a1-83c1-2c681dfd0c46")
+			(uuid "c7a527a3-446e-4090-b63e-ca25a79b478a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1616,7 +1616,7 @@
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "97232dd0-2d6f-4e74-877e-a42ef68e4e28")
+			(uuid "c4d60e7a-c0a6-4a95-a438-3d64feff81c5")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1752,7 +1752,7 @@
 				)
 			)
 		)
-		(property "Value" "CHR ROM (27C64)"
+		(property "Value" "Character ROM (2764)"
 			(at 17.78 26.67 180)
 			(layer "F.SilkS")
 			(uuid "23e830ad-b9ec-449a-8b90-ce5845683278")
@@ -2255,7 +2255,7 @@
 			)
 		)
 		(property "Value" "BACKUP SW"
-			(at 3.7075 -6.4175 0)
+			(at 4.198062 -4.57819 0)
 			(layer "F.SilkS")
 			(uuid "1bd06545-5b15-49da-bf21-5d71185ff256")
 			(effects
@@ -2634,7 +2634,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 3.75 0 90)
+			(at 3.75 -2.189132 90)
 			(layer "F.SilkS")
 			(uuid "8f54147f-7ee5-4e6b-ab39-493f34403956")
 			(effects
@@ -2797,7 +2797,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 3.75 0 90)
+			(at 3.75 -2.54 90)
 			(layer "F.SilkS")
 			(uuid "ad0d69d2-9291-43ef-b8fd-f7c566eb9931")
 			(effects
@@ -2959,7 +2959,7 @@
 				)
 			)
 		)
-		(property "Value" "Famicom_Cartridge_Edge"
+		(property "Value" "Famicom Cartridge Edge"
 			(at 12.93 -0.58 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3652,7 +3652,7 @@
 				)
 			)
 		)
-		(property "Value" "PRG ROM (27256)"
+		(property "Value" "Program ROM (27256)"
 			(at 17.78 27.94 180)
 			(layer "F.SilkS")
 			(uuid "db062199-19de-47e6-8641-0c7e0cc085e6")
@@ -4485,7 +4485,7 @@
 			)
 		)
 		(property "Value" "10KΩ"
-			(at 3.81 0 0)
+			(at -3.124491 0 0)
 			(layer "F.SilkS")
 			(uuid "24d70357-52af-4bfa-b40e-beb9c8f1b3c7")
 			(effects
@@ -5178,7 +5178,7 @@
 			)
 		)
 		(property "Value" "68pF"
-			(at 3.75 0 90)
+			(at 3.75 -2.54 90)
 			(layer "F.SilkS")
 			(uuid "91478d64-758a-492d-9db4-09a832a17607")
 			(effects
@@ -5341,7 +5341,7 @@
 			)
 		)
 		(property "Value" "10KΩ"
-			(at 3.81 0 0)
+			(at -3.124491 0 0)
 			(layer "F.SilkS")
 			(uuid "6a08968b-d2a6-4bd7-8f7d-210a88d8bbcb")
 			(effects
@@ -5533,7 +5533,7 @@
 			)
 		)
 		(property "Value" "5.1KΩ"
-			(at 3.81 0 0)
+			(at 10.744491 0 0)
 			(layer "F.SilkS")
 			(uuid "5a9a714f-f2ef-42fa-80df-56a24e31a0f3")
 			(effects
@@ -6728,7 +6728,7 @@
 			)
 		)
 		(property "Value" "100nF"
-			(at 3.75 0 90)
+			(at 3.75 -2.54 90)
 			(layer "F.SilkS")
 			(uuid "0f553e1e-ec52-4091-9fa0-35d2a65db3be")
 			(effects
@@ -7544,7 +7544,7 @@
 		(uuid "eaa99827-3566-4cde-9b31-89d1f544f0bf")
 	)
 	(gr_text "Nintendo Family \nBASIC 8KB"
-		(at 95.604 85.2322 0)
+		(at 96.874 85.2322 0)
 		(layer "F.SilkS")
 		(uuid "1675a0c6-4b98-475d-8426-3880bdb1e31d")
 		(effects
@@ -7556,7 +7556,7 @@
 		)
 	)
 	(gr_text "OFF"
-		(at 70.115 68.2122 0)
+		(at 62.692568 60.675853 0)
 		(layer "F.SilkS")
 		(uuid "48ced07c-eb36-4dd6-8022-36369d95cb6c")
 		(effects
@@ -7594,7 +7594,7 @@
 		)
 	)
 	(gr_text "ON"
-		(at 77.354 68.2122 0)
+		(at 83.019334 60.675853 0)
 		(layer "F.SilkS")
 		(uuid "a28f80c9-d9ff-4426-8d5a-b6714af463b9")
 		(effects

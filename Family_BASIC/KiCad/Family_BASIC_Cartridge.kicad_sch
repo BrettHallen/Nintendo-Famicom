@@ -7187,16 +7187,6 @@
 	)
 	(wire
 		(pts
-			(xy 190.5 36.83) (xy 190.5 40.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "49aab735-2222-467a-9662-83ffa1baf809")
-	)
-	(wire
-		(pts
 			(xy 243.84 106.68) (xy 243.84 130.81)
 		)
 		(stroke
@@ -7997,16 +7987,6 @@
 	)
 	(wire
 		(pts
-			(xy 101.6 36.83) (xy 101.6 40.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8ee9658d-462f-4f71-b93b-7c3d73f4f467")
-	)
-	(wire
-		(pts
 			(xy 81.28 71.12) (xy 91.44 71.12)
 		)
 		(stroke
@@ -8637,16 +8617,6 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 36.83) (xy 144.78 40.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cc39491b-dabb-491f-b19d-4f07d4d397c6")
-	)
-	(wire
-		(pts
 			(xy 185.42 101.6) (xy 194.31 101.6)
 		)
 		(stroke
@@ -9156,7 +9126,7 @@
 		(uuid "09e078dd-bbdd-445d-a179-006624ef267a")
 	)
 	(label "RAMV_{CC}"
-		(at 190.5 36.83 0)
+		(at 190.5 40.64 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -9416,7 +9386,7 @@
 		(uuid "35203254-6364-444e-bf1d-bc3930a8209c")
 	)
 	(label "V_{CC}"
-		(at 101.6 36.83 0)
+		(at 101.6 40.64 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10276,7 +10246,7 @@
 		(uuid "cfce8026-5d4c-4d47-ae56-3af741768162")
 	)
 	(label "V_{CC}"
-		(at 144.78 36.83 0)
+		(at 144.78 40.64 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10899,7 +10869,7 @@
 			)
 		)
 		(property "Value" "Working RAM (62256)"
-			(at 191.77 40.894 0)
+			(at 180.594 36.322 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11183,8 +11153,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "CHR ROM (27C64)"
-			(at 145.796 40.894 0)
+		(property "Value" "Character ROM (2764)"
+			(at 134.62 36.068 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11546,8 +11516,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "PRG ROM (27256)"
-			(at 102.87 41.148 0)
+		(property "Value" "Program ROM (27256)"
+			(at 93.98 36.322 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12108,8 +12078,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Famicom_Cartridge_Edge"
-			(at 52.9433 36.83 0)
+		(property "Value" "Famicom Cartridge Edge"
+			(at 39.37 32.004 0)
 			(effects
 				(font
 					(size 1.27 1.27)

@@ -8,11 +8,11 @@
 61.314,-127.0822,90.0,top,C5,,,C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal,100nF,tht
 70.204,-75.0722,0.0,top,D1,,,D_DO-35_SOD27_P7.62mm_Horizontal,1N4148,tht
 70.204,-72.5322,0.0,top,D2,,,D_DO-35_SOD27_P7.62mm_Horizontal,1N4148,tht
-63.854,-137.1622,0.0,top,H1,,,Famicom_Cartridge_Edge_Connector_(long_legs),Famicom_Cartridge_Edge,smt
+63.854,-137.1622,0.0,top,H1,,,Famicom_Cartridge_Edge_Connector_(long_legs),Famicom Cartridge Edge,smt
 65.124,-105.5522,90.0,top,IC1,,,DIP-28_W15.24mm,Working RAM (62256),tht
-65.124,-130.9522,90.0,top,IC2,,,DIP-28_W15.24mm,PRG ROM (27256),tht
+65.124,-130.9522,90.0,top,IC2,,,DIP-28_W15.24mm,Program ROM (27256),tht
 126.084,-97.9322,-90.0,top,IC3,,,DIP-14_W7.62mm,74HCT20,tht
-110.844,-130.9522,90.0,top,IC4,,,DIP-28_W15.24mm,CHR ROM (27C64),tht
+110.844,-130.9522,90.0,top,IC4,,,DIP-28_W15.24mm,Character ROM (2764),tht
 70.204,-78.8822,0.0,top,R1,,,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,5.1KΩ,tht
 77.824,-86.5022,180.0,top,R2,,,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,10KΩ,tht
 77.824,-82.6922,180.0,top,R3,,,R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal,10KΩ,tht
