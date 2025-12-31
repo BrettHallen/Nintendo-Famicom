@@ -1,5 +1,5 @@
 ﻿Designator,Quantity,Value,Footprint,Package,MPN,DNP,Mount_Type,Description,Sim.Device,Sim.Pins
-"BT1, BT2",2,1.5V,BatteryHolder_Multicomp_BC-2001_1x2032,,,,smt,Single-cell battery,,
+BT1,1,3V,3000,,,,smt,Single-cell battery,,
 C1,1,68pF,C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal,,,,tht,Unpolarized capacitor,,
 "C2, C3, C4, C5",4,100nF,C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal,,,,tht,Unpolarized capacitor,,
 "D1, D2",2,1N4148,D_DO-35_SOD27_P7.62mm_Horizontal,,,,tht,Diode,D,1=K 2=A

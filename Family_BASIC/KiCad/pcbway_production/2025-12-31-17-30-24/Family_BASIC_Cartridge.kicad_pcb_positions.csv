@@ -1,6 +1,5 @@
 ﻿pos_x,pos_y,rotation,side,designator,mpn,pack,footprint,value,mount_type
-98.654,-68.2122,0.0,top,BT1,,,BatteryHolder_Multicomp_BC-2001_1x2032,1.5V,smt
-131.354,-68.1714,0.0,top,BT2,,,BatteryHolder_Multicomp_BC-2001_1x2032,1.5V,smt
+132.184,-64.3642,0.0,top,BT1,,,3000,3V,smt
 129.894,-97.9922,-90.0,top,C1,,,C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal,68pF,tht
 107.034,-127.1422,90.0,top,C2,,,C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal,100nF,tht
 107.034,-105.5522,90.0,top,C3,,,C_Axial_L3.8mm_D2.6mm_P7.50mm_Horizontal,100nF,tht

@@ -1867,8 +1867,8 @@
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "BT"
-				(at 2.54 2.54 0)
+			(property "Reference" "BT1"
+				(at 3.81 3.1116 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -1876,8 +1876,8 @@
 					(justify left)
 				)
 			)
-			(property "Value" "Battery_Cell"
-				(at 2.54 0 0)
+			(property "Value" "3V"
+				(at 3.81 0.5716 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -1885,8 +1885,8 @@
 					(justify left)
 				)
 			)
-			(property "Footprint" ""
-				(at 0 1.524 90)
+			(property "Footprint" "Clueless_Engineer:3000"
+				(at -10.16 2.54 90)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -1904,7 +1904,7 @@
 				)
 			)
 			(property "Description" "Single-cell battery"
-				(at 0 0 0)
+				(at 0 -10.16 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2022,7 +2022,7 @@
 							)
 						)
 					)
-					(number "2"
+					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -7777,6 +7777,16 @@
 	)
 	(wire
 		(pts
+			(xy 205.74 115.57) (xy 205.74 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7a8db98c-6206-4932-bc6c-9a1c11243dee")
+	)
+	(wire
+		(pts
 			(xy 81.28 73.66) (xy 91.44 73.66)
 		)
 		(stroke
@@ -7787,7 +7797,7 @@
 	)
 	(wire
 		(pts
-			(xy 205.74 127) (xy 205.74 130.81)
+			(xy 205.74 123.19) (xy 205.74 130.81)
 		)
 		(stroke
 			(width 0)
@@ -11806,7 +11816,7 @@
 	)
 	(symbol
 		(lib_id "Device:Battery_Cell")
-		(at 205.74 116.84 0)
+		(at 205.74 120.65 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11815,7 +11825,7 @@
 		(fields_autoplaced yes)
 		(uuid "9479ff26-5951-4c77-9069-0f7128cca3d5")
 		(property "Reference" "BT1"
-			(at 209.55 113.7284 0)
+			(at 209.55 117.5384 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11823,8 +11833,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1.5V"
-			(at 209.55 116.2684 0)
+		(property "Value" "3V"
+			(at 209.55 120.0784 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11832,8 +11842,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Battery:BatteryHolder_Multicomp_BC-2001_1x2032"
-			(at 205.74 115.316 90)
+		(property "Footprint" "Clueless_Engineer:3000"
+			(at 195.58 118.11 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11842,7 +11852,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 205.74 115.316 90)
+			(at 205.74 119.126 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11851,7 +11861,7 @@
 			)
 		)
 		(property "Description" "Single-cell battery"
-			(at 205.74 116.84 0)
+			(at 205.74 130.81 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11859,7 +11869,7 @@
 				(hide yes)
 			)
 		)
-		(pin "2"
+		(pin "3"
 			(uuid "a90e6486-c8e6-4edd-8048-b8f78a576586")
 		)
 		(pin "1"
@@ -12540,76 +12550,6 @@
 				(path "/d387318e-3d77-436c-8e35-eead167b1d94"
 					(reference "IC3")
 					(unit 2)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:Battery_Cell")
-		(at 205.74 124.46 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "f2fbc854-8e46-4984-aa36-e4802bf71928")
-		(property "Reference" "BT2"
-			(at 209.55 121.3484 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "1.5V"
-			(at 209.55 123.8884 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Battery:BatteryHolder_Multicomp_BC-2001_1x2032"
-			(at 205.74 122.936 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 205.74 122.936 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Single-cell battery"
-			(at 205.74 124.46 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "a7d273af-b694-444f-8d3b-234ce629be56")
-		)
-		(pin "1"
-			(uuid "55990af0-e267-4c5a-9629-f4c1f746c09d")
-		)
-		(instances
-			(project "Family_BASIC_Cartridge"
-				(path "/d387318e-3d77-436c-8e35-eead167b1d94"
-					(reference "BT2")
-					(unit 1)
 				)
 			)
 		)
