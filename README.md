@@ -18,7 +18,7 @@ Redesign of the keyboard used with Family BASIC using KiCad.<br>
 
 ![3D view of PCB](/Keyboard_HVC-007/Images/Nintendo_Famicom_Keyboard_HVC-007_3D.png)
 
-## [Family BASIC](/Family_BASIC)
+## [Family BASIC HVC-BS](/Family_BASIC)
 Designing cartridge with 8KB RAM.<br>
 - [Disassembly](https://github.com/micahcowan/fbdasm)
 - [Cartridge schematics](http://cmpslv3.stars.ne.jp/Famic/Fambas.htm)
