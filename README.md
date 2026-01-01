@@ -18,13 +18,13 @@ Redesign of the keyboard used with Family BASIC using KiCad.<br>
 
 ![3D view of PCB](/Keyboard_HVC-007/Images/Nintendo_Famicom_Keyboard_HVC-007_3D.png)
 
-## [Family BASIC (HVC-BS)](/Family_BASIC)
+## [Family BASIC (HVC-BS)](/Family_BASIC_HVC-BS)
 Designing cartridge with 8KB RAM.<br>
 - [Disassembly](https://github.com/micahcowan/fbdasm)
 - [Cartridge schematics](http://cmpslv3.stars.ne.jp/Famic/Fambas.htm)
 - [Leaded Solder's investigation](https://www.leadedsolder.com/2025/03/11/family-basic-space-arcade-game-programming.html)
 
-![3D view of PCB](/Family_BASIC/Images/Nintendo_Famicom_Family_BASIC_3_3D.png)
+![3D view of PCB](/Family_BASIC_HVC-BS/Images/Nintendo_Famicom_Family_BASIC_3_3D.png)
 
 ## [3D System (HVC-032)](/3D_System_HVC-032)
 Photos & schematic for the controller unit HVC-032.<br>
