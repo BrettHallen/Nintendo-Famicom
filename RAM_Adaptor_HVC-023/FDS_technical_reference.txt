@@ -1,0 +1,5377 @@
+*****************************************
+*Famicom Disk System technical reference*
+*****************************************
+Brad Taylor (BTTDgroup@hotmail.com)
+3rd release: April 23rd, 2004
+Spelling corrected, formatting fixed by Brett Hallen, 2/Jan/2026
+[Resisted the urge to "fix" mizzpelled words :-)]
+Thanks to the NES community. http://nesdev.parodius.com.
+Special thanks to Nori and Goroh for their existing related docs (and Ki and 
+Sgt. Bowhack for their respective translations), and to the one known as "D" 
+for his preliminary ROM BIOS documentation he posted on NESdev, a long time 
+ago.
+Recommended literature: Nintendo's patent document on the operation of the 
+FDS's integrated electronic sound synthesizer (U.S.#4,783,812); this device 
+is not covered in this document.
+
+Note: to display this document properly, your text viewer needs two things: 
+1. support for the classic VGA-based text mode 256 character set with 
+line-drawing characters. 2. word-wrap. windows notepad can easily do both 
+if you change the font over to terminal style.
+
+
++----------------------------+
+|What this document describes|
++----------------------------+
+- preface
+- general information on the RAM adaptor hardware
+- 2C33/LH2833 pin nomenclature & signal descriptions
+- the RAM adaptor's disk related hardware facilities
+- ROM BIOS general information
+- the steps involved in booting an FDS disk
+- proper procedures for low-level disk I/O port programming
+- how disk system games interact with the ROM BIOS
+- ROM BIOS disk I/O interface routines and structures
+- ROM BIOS disk I/O routine emulation considerations
+- brief description of FDS Disk drive operation
+- the FDS data transfer protocol
+- FDS disk magnetic encoding format
+- low level disk data storage layout
+- CRC calculations for files on FDS disks
+- RAM adaptor pinouts & their function
+- Steps to emulating the disk drive
+- Getting FDS disk games to boot that normally don't
+- Circumventing copy protection
+- ROM BIOS disassembly
+
+
+*********
+*Preface*
+*********
+Even when considering the limitations of the hardware (and it's short, 
+2-year product cycle), it's not very hard to understand the reason why the 
+Famicom Disk System continues to impress all who see it in action for the 
+first time; it turns the NES/FC into a real personal computing platform. 
+Using floppy disks to boot the system up into a favorite game is something a 
+person has to see for themselves to really appreciate. Additionally, the 
+very first Nintendo games to have any kind of progress-saving features 
+appeared in the FDS format. For gamers who had never seen the FDS versions 
+of games like Kid Icarus, Metroid, and Castlevania, these individuals are 
+usually very impressed with the fact that all these games were released 
+originally on the FDS with save features, opposed to the password system 
+their cart counterparts had (except Castlevania- Konami was cheap, and 
+scrapped *all* support for progress saving in the cart version. Finally, the 
+conventional sound of NES/FC games can almost be considered "crude" when 
+compared to games which take advantage of the extra sound channel present in 
+the FDS. People who have experienced the sound first hand will agree that it 
+really adds a new dimension to the gaming experience. Bottom line: the FDS 
+is one cool and unique piece of hardware.
+
+The "FDS loader" project was inspired by my desire to play all kinds of FDS 
+games off the internet on my home-made stereo AV Famicom console. So, I 
+quickly became interested in figuring out how FDS communication was being 
+accomplished there, since at the time, I had no knowledge of any existing 
+english-written FDS technical reference documents explaining how this was 
+accomplished. In the end, the project was completed, everything turned out 
+okay, and I was satisfied for a while. This was until I started to think 
+about designing a direct interface between the FDS RAM adaptor and a hard 
+drive (or even a 3.5" floppy drive), and scrapping the PC's intervention all 
+together.
+
+The biggest problems with doing this was the fact that the RAM adaptor not 
+only transfers data at a very sluggish 12KB/sec, but the RAM adaptor 
+transfer protocol is totally incompatible with any of the common transfer 
+protocols found on floppies or hard drives (for example, standard 3.5" 
+floppies store data in 4096-bit blocks (sectors), but FDS disk data storage 
+blocks are dynamic in length). To get around the incompatibilities, a 
+program similar to the one I wrote for the PC would have to be written for a 
+microcontroller, which would then serve as the interface between the RAM 
+adaptor, and the hard drive (or the like). Since I'm a man of efficiency, I 
+thought that using a microcontroller that has more memory and more 
+processing power than the thing I'm interfacing it to was a ridiculous idea. 
+So I started to wonder how to get around using the RAM adaptor for disk 
+communication as well.
+
+It's a known fact that most software (games) written for the FDS don't do 
+the disk access themselves; they rely on the ROM BIOS to do the low level 
+disk access. All the game does is provide the file name(s) (or number(s) of 
+files) for the ROM BIOS to access. What is not common knowledge is the 
+details as to how games do this. Basically, I thought that if I could crack 
+this interface, then I could re-write the ROM BIOS code so that when the 
+game requests disk access, my routines would handle the call in the same 
+Manner as the conventional BIOS, but instead of using the FDS's disk I/O 
+ports for transferring data between disk, I'd be using the I/O ports of an 
+IDE hard drive mapped into the NES/FC's memory map.
+
+So that was my goal in 2002: studying the FDS's ROM BIOS code, and figuring 
+out how the hell games access the disk subroutines. Needless to say, that 
+goal has been realized, and documented here. In this addition (2004), 
+information on the technical operation of an FDS disk drive, ROM BIOS 
+disassembly, pinouts of 2C33 & LH2833 chips documented, plus an FDS disk 
+fixing technique, and copy protection circumvention information have all 
+been added here to integrate/combine all my FDS-related research findings to 
+date, into this single document.
+
+
+*******************************
+*Brief RAM adaptor information*
+*******************************
+The RAM adaptor is a piece of hardware which interfaces the NES/Famicom 
+system hardware with the FDS disk drive. What you'll find inside the RAM 
+adaptor is a custom 32KB DRAM chip, an 8KB RAM chip for the pattern table 
+memory, some circuitry for mixing the FDS's audio channel in with the system 
+audio, and the heart of the RAM adaptor: the 2C33 chip.
+
+The DRAM chip (part number: LH2833; built by Sharp) (which is mapped in at 
+$6000..$DFFF) has a lot of connections exclusively to the 2C33 chip. 
+Obviously the 2C33 is controlling the DRAM's refresh cycles and addressing, 
+since only a few system address lines are directly connected to the DRAM). 
+DRAM timings are a mystery, however it is obviously capable of being 
+randomly accessed every bus clock cycle.
+
+The BIOS ROM (mapped in at $E000..$FFFF) is integrated into either the DRAM 
+chip (unlikely), or the 2C33 chip (very likely). It's definite location 
+however is unknown (not that it really matters, anyway).
+
+The 8KB RAM chip used for pattern table memory is completely mapped into PPU 
+address space $0000..$1FFF. The 2C33 can control name table mirroring, but 
+other than that, there is no other hardware in the RAM adaptor pertaining to 
+graphics control.
+
+The heart of the RAM adaptor, the 2C33, contains all the circuitry related 
+to disk I/O, and the extra sound channel.
+
+
+****************************************************
+*2C33/LH2833 pin nomenclature & signal descriptions*
+****************************************************
+          ___  ___
+         |*  \/   |
+/PRG  >01]        [64<  VCC
+ A14  >02]        [63]  XTAL
+ A13  >03]        [62]  XTAL
+ A12  >04]        [61<  VEE
+ A11  >05]        [60]  (02)
+ A10  >06]        [59]  (09)
+ A9   >07]        [58]  (08)
+ A8   >08]        [57<  R/W
+(22)  [09]        [56<  PHI2
+(23)  [10]        [55>  /IRQ
+(24)  [11]        [54>  AOUT
+(04)  [12]        [53<  VEE
+(05)  [13]        [52>  SER OUT
+(06)  [14]        [51<  SER IN
+(03)  [15]        [50>  $4025W.2
+ A7   >16]  2C33  [49>  $4025W.1
+ A6   >17]        [48>  $4025W.0
+ A5   >18]        [47<  $4032R.2
+ A4   >19]        [46<  $4032R.1
+ A3   >20]        [45<  $4032R.0
+ A2   >21]        [44]  EXT0
+ A1   >22]        [43]  EXT1
+ A0   >23]        [42]  EXT2
+ --   [24]        [41]  EXT3
+ D0   [25]        [40]  EXT4
+ D1   [26]        [39]  EXT5
+ D2   [27]        [38]  EXT6
+ D3   [28]        [37]  EXT7/BATT
+ D4   [29]        [36<  CHR A10
+ D5   [30]        [35<  CHR A11
+ D6   [31]        [34>  VRAM A10
+ VEE  >32]        [33]  D7
+         |________|
+
+          ___  ___
+         |*  \/   |
+PHI2  >01]        [28<  VCC
+(60)  [02]        [27<  A13
+(15)  [03]        [26<  A14
+(12)  [04]        [25<  /PRG
+(13)  [05]        [24]  (11)
+(14)  [06]        [23]  (10)
+ A7   >07]        [22]  (09)
+(58)  [08] LH2833 [21<  R/W
+(59)  [09]        [20<  VEE
+ --   [10]        [19]  D4
+ D5   [11]        [18]  D3
+ D6   [12]        [17]  D2
+ D7   [13]        [16]  D1
+ VEE  >14]        [15]  D0
+         |________|
+
+
+/PRG: this is the NES/FC's A15 line NAND gated with the PHI2 line.
+
+A0-A14, D0-D7, R/W, PHI2, /IRQ: the NES's 6502 address, data, control, and 
+interrupt lines (see "2A03 technical reference" doc for details).
+
+XTAL: leads to drop a 21.48 MHz crystal across, in order for the 2C33 to 
+function. Note that this frequency is exactly the same as the one clocking 
+the 2A03 & 2C02 chips in NTSC-based NES consoles.
+
+VEE, VCC: ground, and +5VDC power signals, respectfully.
+
+EXT0-EXT7: these bidirectional pins relate to the contents of internal 
+registers mapped in at addresses $4026 & $4033 (described in detail later).
+
+$4025W.x: outputs fed directly off an internal latch mapped in at that 
+address.
+
+$4032R.x: inputs that effect the value that this port returns when accessed.
+
+SER IN, SER OUT: serial input and output signals (FDS disk data signals).
+
+CHR A10-A11, VRAM A10: PPU mirroring control.
+
+AOUT: the analog output of the 2C33's internal sound synthesizer.
+
+(): numbers listed inside parenthesis indicate private pin connections 
+between the 2C33 and the LH2833 chips. Though undocumented, these signals 
+have to be responsible for maintaining the LH2833's DRAM timing.
+
+--: unused/unconnected.
+
+
+***********************************
+*Disk related hardware in the 2C33*
+***********************************
+Disk hardware in the 2C33 is pretty much there only for processing & 
+dispatching the serial data that appears on the data in & out wires. All 
+other control signals directly reflect the binary values that FDS ports are 
+programmed with (and vice-versa).
+
+There is some electronics used inside the 2C33 for converting RAW serial 
+data to the protocol used for storing binary data on a magnetic disk (and 
+vice-versa). Keep this in mind; in the port descriptions later, it suggests 
+that the disk data inputs/outputs are connected directly to internal shift 
+registers. However, this is only to simplify things. In reality, the disk 
+data is treated before entering/leaving the RAM adaptor. Furthermore, the 
+raw serial data read off a disk also contains the clock rate which the 2C33 
+uses to clock some of the shift registers by.
+
+The disk related hardware inside the 2C33 include:
+- 8-bit serial out/parallel in shift register (SR) (for serializing data to 
+store on disk)
+- 8-bit serial in/parallel out SR (for assembling serial data from disk)
+- 16-bit cyclic redundancy check (CRC) SR (poly=10001000000100001b (the X25 
+standard))
+- 4-bit SR being used as a johnson counter (this counter keeps track of the 
+bit count)
+
+Note: This document will not go into further details on the internal 
+architecture of the 2C33 (since I don't have any real blueprints of the 
+2C33). There may be other hardware (like additional shift registers, etc.) 
+present in the 2C33 that I'm unaware of. This architectural information is 
+only provided to give the programmer an idea of what's going on inside the 
+2C33.
+
+
+Disk Ports
+----------
+- Ports $402x are Write-Only
+- Ports $403x are Read-Only
+
+Only the disk-related ports are mentioned here. Please consult another 
+FDS-related document for information on other FDS ports (like sound, timer, 
+etc.).
+
+
++-----+
+|$4024|
++-----+
+Write data register.
+
+The data that this register is programmed with will be the next 8-bit 
+quantity to load into the shift register (next time the byte transfer flag 
+raises), and to be shifted out and appear on pin 5 of the RAM adaptor cable 
+(2C33 pin 52).
+
+
++-----+
+|$4025|
++-----+
+FDS control.
+
+bit description
+--- -----------
+0:  Electrically connected to pin C on RAM adaptor cable (2C33 pin 48). When 
+active (0), causes disk drive motor to stop. During this time, $4025.1 has 
+no effect.
+
+1:  Electrically connected to pin 3 on RAM adaptor cable (2C33 pin 49). When 
+active (0), causes disk drive motor to turn on. This bit must stay active 
+throughout a disk transfer, otherwise $4032.1 will always return 1. When 
+deactivated, disk drive motor stays on until disk head reaches most inner 
+track of disk.
+
+2:  Electrically connected to pin 1 on RAM adaptor cable (2C33 pin 50). 
+Controls the disk data transfer direction. Set to 1 to read disk data, 0 to 
+write.
+
+3:  Mirroring control. 0 = horizontal; 1 = vertical.
+
+4:  CRC control. ROM BIOS subroutines set this bit while processing the CRC 
+data at the end of a block. While it is unclear why this bit is set during 
+block reading, when this bit is set during a block write, this instructs the 
+2C33 to pipe the current contents of the CRC register to the disk (data in 
+$4024 is effectively ignored during this time).
+
+5:  Always set to 1 (use unknown)
+
+6:  This bit is typically set while the disk head is in a GAP period on the 
+disk. When this is done, it issues a reset to the 2C33's internal CRC 
+accumulator.
+
+During reads, setting this bit instructs the 2C33 to wait for the first set 
+bit (block start mark) to be read off the disk, before accumulating any 
+serial data in the FDS's internal shift registers, and setting the byte 
+transfer ready flag for the first time (and then every 8-bit subsequent 
+transfer afterwards).
+
+During writes, setting this bit instructs the 2C33 to immediately load the 
+contents of $4024 into a shift register, set the byte transfer flag, start 
+writing the data from the shift register onto the disk, and repeat this 
+process on subsequent 8-bit transfers. While this bit is 0, data in $4024 is 
+ignored, and a stream of 0's is written to the disk instead.
+
+7:  When set, generates an IRQ when the byte transfer flag raises.
+
+
++-----------+
+|$4026/$4033|
++-----------+
+External connector output/input, respectfully. The outputs of $4026 
+(open-collector with 4.7K ohm pull-ups (except on bit 7)), are shared with 
+the inputs on $4033.
+
+bit 2C33  ext.con
+--- ----  -------
+ 0   44      3
+ 1   43      4
+ 2   42      5
+ 3   41      6
+ 4   40      7
+ 5   39      8
+ 6   38      9
+ 7   37      -
+
+Bit 7 here is used to report the status of the drive's power condition (1 = 
+power good). It is electrically connected to pin 6 on the RAM adaptor cable. 
+$4026 bit 7 must be set to 1 before the battery status can be checked via 
+$4033 (otherwise it will always return 0).
+
+
++-----+
+|$4030|
++-----+
+2C33 status.
+
+bit description
+--- -----------
+0:  related to the IRQ timer registers (not described here).
+
+1:  Byte transfer flag. Set every time 8 bits have been transfered between 
+the RAM adaptor & disk drive (service $4024/$4031). Reset when $4024, $4031, 
+or $4030 has been serviced.
+
+4:  clear if the CRC register contains 0 (indicating that the transfer passed 
+the CRC).
+
+6:  Unclear operation. Prehaps relates to $4032.1.
+
+7:  Unclear operation. Prehaps relates to $4023.0.
+
+
++-----+
+|$4031|
++-----+
+Read data register.
+
+This register is loaded with the contents of an internal shift register 
+every time the byte transfer flag raises. The shift register recieves it's 
+serial data via pin 9 of the RAM adaptor cable (2C33 pin 51).
+
+
++-----+
+|$4032|
++-----+
+Disk drive status.
+
+bit description
+--- -----------
+0:  Electrically connected to pin A on RAM adaptor cable (2C33 pin 45). When 
+active (0), indicates that a disk is inserted in the drive.
+
+1:  Electrically connected to pin B on RAM adaptor cable (2C33 pin 46). On 
+the negative transition of this signal (-_), indicates that the drive head 
+is currently at the most outer track (beginning of the disk). This bit will 
+stay 0 until the disk drive head advances to the most inner track (end of 
+disk), or if $4025.1 is 1 at anytime.
+
+2:  Electrically connected to pin 7 on RAM adaptor cable (2C33 pin 47). When 
+active (0), indicates that a disk is inserted & is writable (as opposed to 
+being read-only).
+
+6:  considered to return 1
+
+
+**********
+*ROM BIOS*
+**********
+When the FDS is turned on, what you see & hear (the flashing Nintendo logo, 
+Mario & Luigi running around, etc.) is being ran off the ROM BIOS code.
+
+The ROM BIOS code is 8K bytes in size, and resides in the CPU memory map at 
+$E000..$FFFF. There are dozens of subroutines inside the BIOS, but this 
+document will focus on the disk interface subroutines (described later).
+
+
+BIOS data area
+--------------
+The BIOS uses several places in memory, but only some of them are expected 
+to be maintained by game code. They are as follows ([] = 8 bits; () = 16 
+bits).
+
+($DFFE):  disk game IRQ vector    (if [$0101] = 11xxxxxxB)
+($DFFC):  disk game reset vector  (if ($0102) = $5335, or $AC35)
+($DFFA):  disk game NMI vector #3 (if [$0100] = 11xxxxxxB)
+($DFF8):  disk game NMI vector #2 (if [$0100] = 10xxxxxxB)
+($DFF6):  disk game NMI vector #1 (if [$0100] = 01xxxxxxB)
+
+($0102):  PC action on reset
+[$0101]:  PC action on IRQ. set to $80 on reset
+[$0100]:  PC action on NMI. set to $C0 on reset
+
+[$FF]:    value last written to [$2000]   $80 on reset.
+[$FE]:    value last written to [$2001]   $06 on reset
+[$FD]:    value last written to [$2005]#1 0'd on reset.
+[$FC]:    value last written to [$2005]#2 0'd on reset.
+[$FB]:    value last written to [$4016]   0'd on reset.
+[$FA]:    value last written to [$4025]   $2E on reset.
+[$F9]:    value last written to [$4026]   $FF on reset.
+
+The memory in $F9..$FF is always kept in sync with with the aforementioned 
+ports. This is done because these ports are write-only. Consequentially, the 
+current value these ports are programmed with can always be read here.
+
+There may be more structured data areas in the zero page (for example, the 
+BIOS joypad routines use $F5..$F8 for storing controller reads), but only 
+the listed ones are used by the disk call subroutines.
+
+
+Booting a disk game
+-------------------
+Once a disk's boot files have been loaded successfully into memory (more on 
+this later), ($0102) is assigned $AC35, and the BIOS data area (and their 
+respective ports) are set to the aforementioned reset values. Finally, 
+interrupts are enabled, and program control is transferred to the ($DFFC) 
+vector.
+
+
+**************************************
+*ROM BIOS disk procedures information*
+**************************************
+Pretty much all the disk-related BIOS code resides in the range 
+[$E1C7..$E7BA], so keep that in mind when looking at a ROM BIOS disassembly.
+
+- The ROM BIOS has disk routines, and disk subroutines. The routines are the 
+procedures that provide the interface to the software, and the subroutines 
+provide the routines the interface to the disk hardware. Later in this 
+document, all known disk routines, and important disk subroutines will be 
+documented.
+
+
++-------------------------+
+|disk subroutine data area|
++-------------------------+
+All ROM BIOS disk subroutines use a small amount of zero page memory. Disk 
+routines usually pass parameters to the subroutines via this memory area. 
+Disk routines do NOT save any data residing in this area prior to calling 
+subroutines, so procedures that call disk routines must be sure NOT to keep 
+important data in this area during the call. The following list describes 
+the zero page memory used by the subroutines, and their common use ([] = 8 
+bits; () = 16 bits).
+
+($00) first hardcoded parameter
+($02) second hardcoded parameter
+[$04] previous stack frame
+[$05] error retry count
+[$06] file counter
+[$07] current block type
+[$08] boot ID code
+[$09] not 0 to make dummy reads
+($0A) destination address
+($0C) byte transfer count
+[$0E] file found counter
+
+Aside from this memory, disk subroutines also expect that the ROM BIOS data 
+area ($F9..$FF) is maintained properly.
+
+
++------------------+
+|common disk errors|
++------------------+
+When a disk I/O operation fails (for one reason or another), an error # is 
+generated, reflecting the nature of the failure. The common error #'s used 
+are as follows (special error numbers will be mentioned later).
+
+00: disk I/O successful (no error)
+01: ($4032.0) disk not set
+02: ($4033.7) power supply failure (i.e., battery)
+03: ($4032.2) disk is write protected
+21: '*NINTENDO-HVC*' string in block 1 doesn't match
+22: block type 1 expected
+23: block type 2 expected
+24: block type 3 expected
+25: block type 4 expected
+27: ($4030.4) block failed CRC
+28: ($4030.6) file ends prematurely during read
+29: ($4030.6) file ends prematurely during write
+30: ($4032.1) disk head has reached most inner track (end)
+
+
+***************************
+*ROM BIOS disk subroutines*
+***************************
+The following is a documentation on some of the most important ROM BIOS disk 
+subroutines (including entry point addresses in the NES/FC memory map). This 
+information is provided mostly to demonstrate the exact procedures the ROM 
+BIOS follows during disk I/O transfers, since higher-level disk interface 
+procedures (described later) are a much easier and more practical way of 
+accessing disk data.
+
+A pseudo-code listing of the low-level events that occur in pretty much all 
+of the procedures described is provided. The pseudo-code reproduces the I/O 
+events *exactly* as the ROM BIOS code executes them in (even though some of 
+the writes seem superfluous). Emulator authors and FDS low-level code 
+developers should find this information especially useful. In the pseudo 
+code, "x" is used to represent a bit that doesn't matter (during 
+comparisons), or a bit that is not changed (during assignments).
+
+
++-----+
+|Delay|
++-----+
+Entry point:  $E153
+Y on call:  delay in milliseconds
+description:  a time delay generator.
+
+
++--------+
+|XferByte|
++--------+
+Entry point:  $E7A3
+A on call:  byte to write to disk
+A on return:  byte read from disk
+description:  Waits for an IRQ to occur, then reads [$4031] & writes [$4024]. 
+Only the current status of the write flag ($4025.2) determines if data is 
+actually written to disk, or if valid data is read off the disk.
+Logic:
+  (Wait for IRQ occurrence)
+  temp=[$4031]
+  [$4024]=A
+  A=temp
+  return
+
+
++-----+
+|Error|
++-----+
+Entry point:  $E781
+X on call:  error code
+A,X on return:  error code
+Description:  restores stack to a prior state before returning, and 
+terminates data transfer.
+Logic:
+  S = [$04];    restore stack frame to a previous state
+  [$4025] = 0010x11x; disable scan disk bit
+  A = X = ErrorCode
+  return
+
+
++----------+
+|WaitForRdy|
++----------+
+Entry Point:  $E64D
+Description:  used to initilalize the disk drive for data transfers.
+Logic:
+  [$4025] = 0010x110; stop motor (if it was already running)
+  Delay(512)
+  [$4025] = 0010x111; no effect
+  [$4025] = 0010x101; scan disk
+  Delay(150);   allow plenty of time for motor to turn on
+  [$4026] = 1xxxxxxx; enable battery checking
+  if ([$4033] = 0xxxxxxx);check battery good bit
+   then Error($02)
+  [$4025] = 0010x110; stop motor again
+  [$4025] = 0010x111; no effect
+  [$4025] = 0010x101; scan disk again
+  repeat
+   if ([$4032] = xxxxxxx1)
+    then Error($01);  constantly examine disk set
+  until ([$4032] = xxxxxx0x);wait for ready flag to activate
+  return
+
+
++------------+
+|CheckBlkType|
++------------+
+Entry point:  $E68F
+A on call:  expected block type
+Description:  compares the first byte in a new data block to the one passed 
+in A. Generates an error if test fails.
+Logic:
+  Delay(5);   advance 5 ms into GAP period
+  [$4025] = x1xxxxxx; wait for block start mark to appear
+  [$0101] = 01000000; set IRQ mode to disk byte transfer
+  [$4025] = 1xxxxxxx; enable disk transfer IRQs
+  if (XferByte <> BlockType);test first byte in block
+   then Error($21+BlockType)
+  return
+
+
++------------+
+|WriteBlkType|
++------------+
+Entry point:  $E6B0
+A on call:  block type to create
+Description:  creates a new data block, and writes the passed block type to 
+it as the first byte.
+Logic:
+  [$4025] = 00x0x0xx; set transfer direction to write
+  Delay(10);    create a 10 ms GAP period
+  [$4024] = 00000000; zero out write data register
+  [$4025] = 01x0x0xx; start writing data via $4024 to disk
+  [$0101] = 01000000; set IRQ mode to disk byte transfer
+  [$4025] = 1xxxxxxx; enable disk transfer IRQs
+  XferByte($80);    write out block start mark
+  XferByte(BlockType);  write out specified block type
+  return
+
+
++------------+
+|EndOfBlkRead|
++------------+
+Entry point:  $E706
+Description:  called when all (no more and no less) data from a block has 
+been read in. Tests CRC bit to verify data block's integrity.
+Logic:
+  XferByte;   dummy read in CRC byte 1
+  if ([$4030] = x1xxxxxx)
+   then Error($28)
+  [$4025] = xxx1xxxx; activate process CRC bit
+  XferByte;   dummy read in CRC byte 2
+  if ([$4030] = xxx1xxxx);test (CRC accumulator = zero) status
+   then Error($27)
+  [$4025] = 00x0x1xx; disable further disk IRQ's, etc.
+  if ([$4032] = xxxxxxx1);check disk set status
+   then Error($01)
+  return
+
+
++-------------+
+|EndOfBlkWrite|
++-------------+
+Entry point:  $E729
+Description:  called when all data has been written to a block. Writes out 
+16-bit CRC value generated by the FDS hardware as last 2 bytes of file.
+Logic:
+  XferByte;   pipes last byte written into shift registers
+  if ([$4030] = x1xxxxxx)
+   then Error($29)
+  [$4025] = xxx1xxxx; activate process CRC bit
+  Delay(0.5);   contents of CRC register written for 0.5 ms
+  if ([$4032] = xxxxxx1x);check drive ready status
+   then Error($30); disk head reached end of disk
+  [$4025] = 00x0x1xx; disable further disk IRQ's, etc.
+  if ([$4032] = xxxxxxx1);check disk set status
+   then Error($01)
+  return
+
+
+Disk block processing examples
+------------------------------
+(reading first block on disk)
+  WaitForRdy;   initialise drive & wait for ready flag
+  Delay(267);   advance 267 ms into first GAP period
+  CheckBlkType();   wait for block start mark & confirm block type
+  (where data can be read from disk)
+  EndOfBlkRead
+
+(writing first block on disk *)
+  WaitForRdy
+        [$4025] = 00x0x0xx; set transfer direction to write
+        Delay(398);   create a 398 ms GAP period
+  WriteBlkType();   10 more ms of GAP, then write block type
+  (where data can be written to disk)
+  EndOfBlkWrite
+
+(reading subsequent blocks on disk)
+  CheckBlkType()
+  (where data can be read from disk)
+  EndOfBlkRead
+
+(writing subsequent blocks on disk)
+  WriteBlkType()
+  (where data can be written to disk)
+  EndOfBlkWrite
+
+(ending disk transfer, including if an error occurs)
+  Error();    error # is set to 0 when disk transfer successful
+
+
+*: the ROM BIOS code does not provide any standard way of doing this. Games 
+that must rewrite the first data block on a FDS disk should follow the 
+example given here. The delay value listed is an approximation of the size 
+that first GAP period on the disk should be. The figure is based on the size 
+that GAP periods on typical FDS disks are (it seems to follow the figure 
+1.5x, where x is the time the ROM BIOS waits in the gap period during the 
+reading of the first block).
+
+
+************************
+*ROM BIOS disk routines*
+************************
+These are the routines that FDS games use for disk access (presumably the 
+only ones). They are called directly from FDS game code via JSR $xxxx 
+instructions. The parameters that the routines work on are hardcoded into 
+the instruction stream following the JSR $xxxx instruction. Each parameter 
+is 16-bits, and one or two may be present. The called subroutines always fix 
+the stack so that program control is returned to the instruction after the 
+hardcoded parameters.
+
+- when one of these routines is called, the disk set status ($4032.0), and 
+for routines that write to the disk, write protect status ($4032.2) are 
+checked before starting the disk transfer. If these tests fail, a final 
+error # is generated. If an error occurs during a disk transfer, a second 
+attempt at the transfer is made before the error is considered to be final.
+
+- after any final error is generated, program control is returned to the 
+instruction to follow the call, and the error code will be in A and X, with 
+the sign and zero flags set to reflect the error #.
+
+- don't expect disk calls to return quick; it may take several seconds to 
+complete.
+
+- the ROM BIOS always uses disk IRQ's to transfer data between the disk, so 
+programs must surrender IRQ control to the ROM BIOS during these disk calls. 
+The value at [$0101] however, is preserved on entry, and restored on exit.
+
+
+Parameters and procedures
+-------------------------
+The types of structures that the disk routines work with will be described 
+first, and then the disk routines themselves.
+
+
++------------------------------------+
+|Disk identify header string (DiskID)|
++------------------------------------+
+This is a commonly used string. It consists of 10 bytes which are all 
+compared directly against bytes 15..24 (right after the '*NINTENDO-HVC*' 
+string) of the disk's header block (block type 1; always the first one on 
+the disk). If any of the bytes fail the comparison, an appropriate error # 
+is generated. Comparisons of immaterial data can be skipped by placing an 
+$FF byte in the appropriate place in the DiskID string (for example, when 
+the ROM BIOS boots a disk, it sets all the fields in the DiskID string to 
+-1, except disk side #, and disk #, which are set to 0 (so these fields have 
+to match 0)). The following chart describes the DiskID structure, and the 
+error #'s returned when a comparison fails.
+
+offset  size  error#  description
+------  ----  ------  -----------
+  0       1    $04    game manufacturer code
+  1       4    $05    game ASCII name string
+  5       1    $06    game version
+  6       1    $07    disk side #
+  7       1    $08    disk #
+  8       1    $09    extra disk # data
+  9       1    $10    extra disk # data
+  A                   -
+
+
++-------------------------+
+|File load list (LoadList)|
++-------------------------+
+This string is used when games need to specify which files to load from disk 
+into memory. Each byte in LoadList specifies a file to load into memory. As 
+file headers are sequentially read off the disk, the file identification 
+code (FileID; byte offset 2 in block types 3) is compared to every element 
+in the LoadList. If a match is found, the file is loaded. This is done until 
+there are no more files on the disk (as indicated by the file count stored 
+in block type 2 on the disk). The LoadList can be terminated by an $FF 
+entry. Only the first 20 entries in the list will be processed (this is done 
+because only about 800 clock cycles are available to the compare algorithm 
+during this time). If $FF is the first element in the string, then this 
+indicates that the boot load file code (BootID; stored on the disk in block 
+1, byte offset 25) is to be used for deciding which files to load off disk 
+(in this case, the condition for loading a file is (BootID >= FileID)).
+
+
++------------------------+
+|File header (FileHeader)|
++------------------------+
+This structure is specified when a file is to be written to the disk. The 
+first 14 bytes of this structure directly specify the data to use for 
+generating a file header block (type 3, bytes [2..15]) to write to disk. The 
+last 2 entries concern the file data to be written to disk (block type 4). 
+The following is a table describing the FileHeader structure.
+
+offset  size  description
+------  ----  -----------
+  00     1    file ID code
+  01     8    file name
+  09     2    load address
+  0B     2    file data size
+  0D     1    load area (0 = CPU data; other = PPU)
+  0E     2    source address of file data (NOT written to disk)
+  10     1    source address type (0=CPU, other=PPU; NOT written to disk)
+  11          -
+
+
++---------------------------+
+|Disk information (DiskInfo)|
++---------------------------+
+This is a data structure returned by a subroutine, of collected information 
+from the disk (list of files on disk, disk size, etc.). The following table 
+is a description of that structure.
+
+offset  size  description
+------  ----  -----------
+  0      1    game manufacturer code
+  1      4    game ASCII name string
+  5      1    game version
+  6      1    disk side #
+  7      1    disk #
+  8      1    extra disk # data
+  9      1    extra disk # data
+  A      1    # of files on disk
+
+(the following block will appear for as many files as the "# of files on 
+disk" byte indicates)
+
+  B      1    file ID code
+  C      8    file name (ASCII)
+
+(the following is present after the last file info block. Disk size is equal 
+to the sum of each file's size entry, plus an extra 261 per file.)
+
+x        1    disk size high byte
+x+1      1    disk size low  byte
+x+2           -
+
+
++----------+
+|Load Files|
++----------+
+Entry point:  $E1F8
+RETaddr:      pointer to DiskID
+RETaddr+2:    pointer to LoadList
+A on return:  error code
+Y on return:  count of files actually found
+Description:  Loads files specified by DiskID into memory from disk. Load 
+addresses are decided by the file's header.
+
+
++-----------+
+|Append File|
++-----------+
+entry point:    $E237
+RETaddr:        pointer to DiskID
+RETaddr+2:      pointer to FileHeader
+A on return:    error code
+special error:  #$26 if verification stage fails
+Description:  appends the file data given by DiskID to the disk. This means 
+that the file is tacked onto the end of the disk, and the disk file count is 
+incremented. The file is then read back to verify the write. If an error 
+occurs during verification, the disk's file count is decremented (logically 
+hiding the written file).
+
+
++----------+
+|Write File|
++----------+
+Entry point:    $E239
+RETaddr:        pointer to DiskID
+RETaddr+2:      pointer to FileHeader
+A on call:      file sequence # for file to write
+A on return:    error code
+special error:  #$26 if verification fails
+Description:    same as "Append File", but instead of writing the file to the 
+end of the disk, A specifies the sequential position on the disk to write 
+the file (0 is the first). This also has the effect of setting the disk's 
+file count to the A value, therefore logically hiding any other files that 
+may reside after the written one.
+
+
++--------------------+
+|Get Disk Information|
++--------------------+
+Entry point:  $E32A
+RETaddr:  pointer to DiskInfo
+A on return:  error code
+Description:  fills DiskInfo up with data read off the current disk.
+
+
++-----------------+
+|Adjust File count|
++-----------------+
+Entry point:  $E2BB
+RETaddr:  pointer to DiskID
+A on call:  number to reduce current file count by
+A on return:  error code
+Special error:  #$31 if A is less than the disk's file count
+Description:  reads in disk's file count, decrements it by A, then writes the 
+new value back.
+
+
++----------------+
+|Check File count|
++----------------+
+Entry point:  $E2B7
+RETaddr:  pointer to DiskID
+A on call:  number to set file count to
+A on return:  error code
+Special error:  #$31 if A is less than the disk's file count
+Description:  reads in disk's file count, compares it to A, then sets the 
+disk's file count to A.
+
+
++-----------------------+
+|Set File count (alt. 1)|
++-----------------------+
+Entry point:  $E305
+RETaddr:  pointer to DiskID
+A on call:  number to set file count to
+A on return:  error code
+Description:  sets the disk's file count to A.
+
+
++-----------------------+
+|Set File count (alt. 2)|
++-----------------------+
+entry point:  $E301
+RETaddr:    pointer to DiskID
+A on call:  number to set file count to minus 1
+A on return:  error code
+Description:  sets the disk's file count to A+1.
+
+
+************************************************
+*ROM BIOS disk routine emulation considerations*
+************************************************
+For ambitious NES/FC emulator authors, sporting a built-in FDS disk routine 
+interface (and scrapping the disk-related ROM BIOS code all together), can 
+make FDS-written games run on an NES emulator as fast as cart/ROM based 
+games. This means that you will probably never even notice a single 
+save/load screen while playing any FDS game you can think of, other than the 
+regular change side prompts.
+
+For emulators which base their NES 6502 emulation address decoding on a 
+full-sized 17-bit address look-up table, trapping access to FDS routines is 
+a snap. Other emulators may have to use 6502 jam opcodes at the target 
+addresses of a disk routine in the ROM BIOS, to tell your 6502 engine to 
+transfer control to another emulator routine handling the FDS disk request.
+
+Once access to these routines are trapped, you would write your handlers to 
+perform the same task as the ROM BIOS code, except without having to deal 
+with using a virtual 2C33 engine to access disk data. Also, CPU cycle count 
+information is irrelevant, so there's no point in worrying about it. Since 
+you'll likely have the FDS disk data cached somewhere in your emulator's 
+heap, most the work your disk routine has to do will consist of copying a 
+few thousand bytes from FDS disk cache memory, into the NES's memory map.
+
+Another bonus of emulating disk routines, is that when disk access is 
+requested by a game, the proper side & disk # are specified along with the 
+call. These parameters can be examined, and the matching FDS disk image can 
+be selected, without ever having to prompt the user on which side, (or even 
+the game disk) to choose. The only prompts that the user will have to deal 
+with, are ones that ask the user to change the disk. Since disk side and 
+game type is irrelevant because the game specifies that info, all the user 
+has to do is push a single button to get the FDS emulator to continue the 
+game's action again.
+
+For the less ambitious emulator author who doesn't want to write their own 
+FDS disk call emulator, but still would like to see a decrease in load/save 
+times, here's a suggestion. The ROM BIOS disk subroutines call a wait 
+routine (waiting for an IRQ) whenever a byte is to be transferred to/from the 
+disk. The solution to this is to change the wait loop branch target so that 
+it branches directly to the IRQ handler for reading/writing disk data. This 
+way, data is accessed as fast as the 6502 emulation will allow. Another way 
+of decreasing the load/save times is by not limiting the # of 6502 clock 
+cycles per frame that occur during the disk call.
+
+
+***********************************************
+*Brief description of FDS Disk drive operation*
+***********************************************
+Data coming out of the FDS disk drive is a real time representation of what 
+data the head is currently reading. This means that no formatting of the 
+data occurs. The head is always advancing across the disk at a constant rate 
+(sequential access) as the disk spins. When the head reaches the end of the 
+disk (most inner track), it returns to the beginning of the disk (most outer 
+track) and the cycle repeats, upon request from the RAM adaptor. This means 
+that on every scan, the entire disk is read (which takes about 6 seconds). 
+The disk drive signals the RAM adaptor when the head has been positioned to 
+the outer most track, and is starting a new scan.
+
+
+****************************
+*FDS data transfer protocol*
+****************************
+In any data transfer, 2 pieces of information (signals) must be sent:
+
+- a signal that represents the rate at which the data is being sent
+- the actual data
+
+Like most disk drive units, the FDS disk drive is sending it's data out via 
+serial connection (1 wire, meaning 1 bit at a time). Data prerecorded on FDS 
+disks have already had the 2 aforementioned signals "combined" using an XOR 
+algorithm described below (note that I've used underscores (_) and hyphens 
+(-) to respectfully represent 0 and 1 logic levels in my diagram below).
+
+
+Rate  ----____----____----____----____----____----____----____----____----____
+
+Data  ----------------________________________--------________----------------
+
+
+XOR ____----____--------____----____----________--------________----____----
+
+Disk  ____-_______-___________-_______-___________-_______________-_______-___
+
+
+    time --->
+
+
+Rate is the signal that represents the intervals at which data (bits) are 
+transferred. A single data bit is transferred on every 0 to 1 (_-) transition 
+of this signal. The RAM adaptor expects a transfer rate of 96.4kHz, although 
+the tolerance it has for this rate is ñ10%. This tolerance is necessary 
+since, the disk drive can NOT turn the disk at a constant speed. Even though 
+it may seem constant, there is a small varying degree in rotation speed, due 
+to it's physical architecture.
+
+Data is the desired sequential binary data to be serialized. I specifically 
+chose the data used here to demonstrate how it would be stored on a FDS 
+disk. Note that if data changes, it changes synchronously with the 0 to 1 
+(_-) transition of the Rate signal.
+
+XOR represents the result of a logical exclusive OR performed on the Rate 
+and Data signals.
+
+Disk represents what is ACTUALLY recorded on a FDS disk (and therefore, what 
+is coming out of the disk drive, and going to the RAM adaptor). This signal 
+is constructed of pulses that are written in sync with every 0 to 1 (_-) 
+transition of the XOR result signal. In reality, the length of these pulses 
+(the time it stays as 1) is about 1 microsecond. When the RAM adaptor sends 
+data out to write to the disk, it is also in this format (although logically 
+inverted compared to the diagram shown above). However, data sent to the RAM 
+adaptor is not required to be in this format. The RAM adaptor responds to 
+the 0 to 1 (_-) transitions in the serial data signal rather than the length 
+of the pulses. This is why the RAM adaptor will interpret both serial data 
+types (XOR or Disk) indifferently.
+
+
+***********************************
+*FDS disk magnetic encoding format*
+***********************************
+The system for magnetically storing data on FDS disks is very simple. At any 
+instant, when the disk head is reading the disk, it has no way of telling 
+what magnetic charge the current section of disk area has (consequently, the 
+head produces no voltage). Because of how the physics of magnetic inductance 
+works, the head will *only* generate voltage while a section of the disk 
+track containing opposite charges is being read. During this time, the head 
+produces a spike in voltage (the duration of the spike is a function of the 
+width of the head (the area physically contacting the disk's surface), and 
+the rotation speed of the disk). These spikes are then amplified, and sent 
+to the data out pin on the drive. This is how data encoding on FDS disks is 
+made. The following diagram should provide more explanation:
+
+           _____       _____       _____
+POL \_____/     \_____/     \_____/
+
+DATA  -_____-_____-_____-_____-_____-_____
+
+time    --->
+
+
+POL represents the polarity of the magnetic charge on a typical disk track.
+
+DATA is the interpretation of the POL changes, and is also the digital 
+signal that appears on the "data out" signal of the drive as a result.
+
+
++-------------------------------------+
+|Magnetically recording data onto disk|
++-------------------------------------+
+Data entering the disk drive intended to be written onto the disk is not 
+written directly. Like the RAM adaptor, the data input on the disk drive 
+responds to the positive-going edge of pulses fed into it. This is because 
+the data is fed into an internal positive-edge triggered toggle flip-flop 
+(divide-by-2 counter). The output status of this flip-flop is then the 
+signal that is directed to the drive's write head during the time disk 
+writing is to be engaged. The 2 write head wires are connected to the 
+flip-flop's complimentary outputs, so that they are always in opposite 
+states during the writing phase. During writing, the current that flows 
+through the write head (in either direction) is about 20 to 25 milliamperes. 
+The following chart outlines the relationship between these signals:
+
+
+Din ----__--__--____--__----______--____----
+
+
+W1  ______----______----__________------____
+
+W2  ------____------____----------______----
+
+time    --->
+
+
+Din is the data entering the drive, intended to be written to disk.
+
+W1 & W2 represent the digital status of the wires connected to the disk 
+drive's write head.
+
+
+************************************
+*Low level disk data layout/storage*
+************************************
+Now that we have covered the communication protocol used, let's talk about 
+the layout of data structures on the disks. Nori's document has done a good 
+job of providing information on the way RAW data is laid out on the disk. 
+At this point, I recommend referring to Nori's "fds-nori.txt" and reading 
+the first half of the document describing the disk data structures.
+
+Here, I would like to elaborate on some items found in the aforementioned 
+document. Note that any references to bit or byte data transfers assume the 
+standard 96.4kHz transfer bit rate (meaning 1 bit is transferred in 1/96400 
+seconds).
+
+- The disk drive unit signals the RAM adaptor when the head has moved to the 
+beginning of the disk via the "-ready" signal it sends out (more on this 
+later). The "-ready" signal is based on a mechanical switch inside the drive 
+which is activated when the head is brought back to the outer most edge of 
+the disk (the beginning). Because the switch will usually be triggered 
+prematurely, the first 13000 bits (approx.) of data the drive will send out 
+immediately after this switch is activated will be invalid. To compensate 
+for this, the RAM adaptor purposely ignores the first 26100 bits (approx.) 
+sent to it since it receives the "-ready" signal from the disk drive.
+
+- After this period, the RAM adaptor is going to be interpreting data read 
+off the disk. Because of the many mechanical variables these disk drive 
+units have, the data recorded on the disk cannot anticipate the exact point 
+at which the RAM adaptor will start accepting data. Therefore, a padding 
+mechanism is used, which is referred to here as the "GAP" period.
+
+- All GAP periods recorded on the disk are composed entirely of binary coded 
+0's. The RAM adaptor ignores these 0's (meaning that there is no size limit 
+to any GAP period recorded on the disk) until a set (1) bit is received, 
+which identifies the start of a file (referred to in Nori's doc. as the 
+"block start mark"). The data immediately following this bit makes up the 
+file data. Size of the file is then determined by the file data read in 
+(consult Nori's doc). Note that this is the only way to determine the size 
+of a file, since there really is no mechanism implemented (like there is for 
+the start of a file) to indicate where a file's data ends.
+
+- The order serial binary data is recorded on the disk in is the little 
+endian format. Lesser significant bits are sent first before greater, and 
+same for bytes.
+
+- The length of the first GAP period present on typical FDS disks (relative 
+to the instant the disk drive's "-ready" signal is activated) is about 40000 
+bits, after which the first block start mark (indicating the beginning of 
+the first file) will appear.
+
+- Writing to the disk does not occur in sync with the existing data on the 
+disk. Where a write period starts and ends is bad news because it creates a 
+gap between pulses almost always of an invalid length. This would lead to 
+the RAM adaptor misinterpreting the data, causing errors. To overcome this, 
+the RAM adaptor always ignores the first 488 bits (aprox.) to follow after 
+the immediate end of any file. This period allows the RAM adaptor (or the 
+game rather) an oppertunity to make the switch from reading from the disk to 
+writing or vice-versa.
+
+- After this period, the adaptor will expect another gap period, which will 
+then lead into a block start mark bit, and the next file. This cycle repeats 
+until there are no more files to be placed on a disk.
+
+- The typical GAP period size used between files on FDS disks is roughly 976 
+bits (this includes the bits that are ignored by the RAM adaptor).
+
+- The rest of the disk is filled with 0's after the last file is recorded 
+(although it really shouldn't matter what exists on the disk after this).
+
+
+******************
+*CRC calculations*
+******************
+Special thanks to Val Blant for assistance in cracking the CRC algorithm 
+used by the FDS.
+
+The "block end mark" is a CRC calculation appended to the immediate end of 
+every file. Its calculation is based exclusively on that files' data. The 
+CRC is 16-bits, and is generated with a 17 bit poly. The poly used is 
+10001000000100001b (the X25 standard). Right shift operations are used to 
+calculate the CRC (this effectively reverses the bit order of the 
+polynomial, resulting in the 16-bit poly of 8408h). A x86 example is shown 
+below (note that ; is used to seperate multiple statements on one line, and 
+// is used for comments). The file this algorithm is designed to work on has 
+no block start mark in it ($80), and has 2 extra bytes at the end (where a 
+CRC calculation would normally reside) which are 0'd. While the block start 
+mark is actually used in the calculation of a FDS file CRC, you'll see in 
+the algo below that the block start mark q'ty ($80) is moved directly into a 
+register.
+
+// ax is used as CRC accumulator
+// si is the array element counter
+// di is a temp reg
+
+// Size is the size of the file + 2 (with the last 2 bytes as 0)
+// Buf points to the file data (with the 2 appended bytes)
+
+  mov ax,8000h  // this is the block start mark
+  sub si,si   // zero out file byte index ptr
+
+@1: mov dl,byte ptr Buf[si]
+  inc si
+
+  shr dl,1; rcr ax,1; sbb di,di; and di,8408h; xor ax,di
+  shr dl,1; rcr ax,1; sbb di,di; and di,8408h; xor ax,di
+  shr dl,1; rcr ax,1; sbb di,di; and di,8408h; xor ax,di
+  shr dl,1; rcr ax,1; sbb di,di; and di,8408h; xor ax,di
+  shr dl,1; rcr ax,1; sbb di,di; and di,8408h; xor ax,di
+  shr dl,1; rcr ax,1; sbb di,di; and di,8408h; xor ax,di
+  shr dl,1; rcr ax,1; sbb di,di; and di,8408h; xor ax,di
+  shr dl,1; rcr ax,1; sbb di,di; and di,8408h; xor ax,di
+
+  cmp si,Size
+  jc  @1
+
+// ax now contains the CRC.
+
+
+Of course, this example is only used to show how the CRC algorithm works. 
+Using a precalculated CRC look-up table is a much faster (~5 cc/it) method 
+to calculate CRCs in the loop (the above method consumes over 40 clock 
+cycles per iteration). However, if speed is not an issue, the above code 
+uses only a fraction of the memory a table look-up implementation would 
+consume. More memory can be saved by loading the polynomial value into a 
+register, and even more by rolling the repeated instructions up into a 
+second loop.
+
+
+*********************************
+*FDS RAM adaptor control signals*
+*********************************
+Special thanks to Christopher Cox for additional FDS wiring information not 
+originally here.
+
+
+              #######
+  ################################
+  ################################
+  ###  1   3   5   7   9   B   ###
+  ###                          ###
+  ###  2   4   6   8   A   C   ###
+  ################################
+  ################################
+
+Open-end view of the RAM adaptor's disk drive connector.
+
+
+pin #     *2C33 pin *RAM pins   signal description
+-----     --------- ---------   ------------------
+  1          50     5 (green)   (O) -write
+  2          64     C (cyan)    (O) VCC (+5VDC)
+  3          49     6 (blue)    (O) -scan media
+  4          32     1 (brown)   (O) VEE (ground)
+  5          52     3 (orange)  (O) write data
+  6          37     B (pink)    (I) motor on/battery good
+  7          47     8 (grey)    (I) -writable media
+  8           -     -           (I) motor power (note 1)
+  9          51     4 (yellow)  (I) read  data
+  A          45     A (black)   (I) -media set
+  B          46     9 (white)   (I) -ready
+  C          48     7 (violet)  (O) -stop motor
+
+notes on symbols
+----------------
+(O):  Signal output.
+(I):  Signal input.
+-  : Indicates a signal which is active on a low (0) condition.
+*  : These are corresponding pinouts for the 2C33 I/O chip, and the other end 
+of the RAM adaptor cable, which both are located inside the RAM adaptor.
+1  : The RAM adaptor does not use this signal (there is no wire in the cable 
+to carry the signal). An electronically controlled 5-volt power supply 
+inside the disk drive unit generates the power that appears here. This power 
+is also shared with the drive's internal electric motor. Therefore, the 
+motor only comes on when there is voltage on this pin.
+
+
+(O) -write
+----------
+While active, this signal indicates that data appearing on the "write data" 
+signal pin is to be written to the storage media.
+
+(O) write data
+--------------
+This is the serial data the RAM adaptor issues to be written to the storage 
+media on the "-write" condition.
+
+(O) -scan media
+---------------
+While inactive, this instructs the storage media pointer to be reset (and 
+stay reset) at the beginning of the media. When active, the media pointer is 
+to be advanced at a constant rate, and data progressively transferred 
+to/from the media (via the media pointer).
+
+(O) -stop motor
+---------------
+Applicable mostly to the FDS disk drive unit only, the falling edge of this 
+signal would instruct the drive to stop the current scan of the disk.
+
+(I) motor on/battery good
+-------------------------
+Applicable mostly to the FDS disk drive unit only, after the RAM adaptor 
+issues a "-scan media" signal, it will check the status of this input to see 
+if the disk drive motor has turned on. If this input is found to be 
+inactive, the RAM adaptor interprets this as the disk drive's batteries 
+having failed. Essentially, this signal's operation is identical to the 
+above mentioned "motor power" signal, except that this is a TTL signal 
+version of it.
+
+(I) -writable media
+-------------------
+When active, this signal indicates to the RAM adaptor that the current media 
+is not write protected.
+
+(I) read data
+-------------
+when "-scan media" is active, data that is progressively read off the 
+storage media (via the media pointer) is expected to appear here.
+
+(I) -media set
+--------------
+When active, this signal indicates the presence of valid storage media.
+
+(I) -ready
+----------
+Applicable mostly to the FDS disk drive unit only, the falling edge of this 
+signal would indicate to the RAM adaptor that the disk drive has 
+acknowledged the "-scan media" signal, and the disk drive head is currently 
+at the beginning of the disk (most outer track). While this signal remains 
+active, this indicates that the disk head is advancing across the disk's 
+surface, and appropriate data can be transferred to/from the disk. This 
+signal would then go inactive if the head advances to the end of the disk 
+(most inner track), or the "-scan media" signal goes inactive.
+
+
+***********************************
+*Steps to emulating the disk drive*
+***********************************
+Before a data transfer between the RAM adaptor and the disk drive/storage 
+media can commence, several control signals are evaluated and/or dispatched. 
+The order in which events occur, is as follows.
+
+1. "-media set" will be examined before any other signals. Activate this 
+input when your storage media is present. Make sure this input remains 
+active throughout the transfer (and for a short time afterwards as well), 
+otherwise the FDS BIOS will report error #1 (disk set). If this signal is 
+not active, and a data transfer is requested, the BIOS will wait until this 
+signal does go active before continuing sending/examining control signals.
+
+2. If the RAM adaptor is going to attempt writing to the media during the 
+transfer, make sure to activate the "-writable media" input, otherwise the 
+FDS BIOS will report error #3 (disk write protected). Note that on a real 
+disk drive, "-writable media" will active at the same time "-media set" does 
+(which is when a non-write protected disk is inserted into the drive). A few 
+FDS games rely on this, therefore for writable disks, the "-write enable" 
+flag should be activated simultaneously with "-media set".
+
+3. The RAM adaptor will set "-scan media"=0 and "-stop motor"=1 to instruct 
+the storage media to prepare for the transfer. This will only happen if the 
+first 2 conditions are satisfied.
+
+4. "motor on/battery good" will be examined next. Always keep this input 
+active, otherwise the FDS BIOS will report error #2 (battery low).
+
+5. Activating "-ready" will inform the RAM adaptor that the media pointer is 
+currently positioned at the beginning of the media, and is progressing. It 
+is during the time that this signal is active that media data 
+transfers/exchanges are made. Make sure this input remains active during the 
+transfer, otherwise the FDS BIOS will report an error. "-ready" shouldn't be 
+activated until at least 14354 bit transfers (~0.15 seconds) have elapsed 
+relative to step #3.
+
+6. During the transfer, the "-write" signal from the RAM adaptor indicates 
+the data transfer direction. When inactive, data read off of the media is to 
+appear on the "read data" signal. When active, data appearing on the "write 
+data" signal is to be recorded onto the media.
+
+7. The RAM adaptor terminates the data transfer at it's discretion (when it 
+has read enough or all the files off of the media). This is done when "-scan 
+media"=1 or "-stop motor=0". After this, it is OK to deactivate the "-ready" 
+signal, and halt all media I/O operations.
+
+
++-----------------+
+|A few final notes|
++-----------------+
+- It is okay to tie "-ready" up to the "-scan media" signal, if the media 
+needs no time to prepare for a data transfer after "-scan media" is activated. 
+Don't try to tie "-ready" active all the time- while this will work for 95% 
+of the disk games i've tested, some will not load unless "-ready" is 
+disabled after a transfer.
+
+- Some unlicensed FDS games activate the "-stop motor" signal (and possibly 
+even "-write", even though the storage media is not intended to be written 
+to) when a media transfer is to be discontinued, while "-scan media" is 
+still active. While this is an unorthodox method of doing this, the best 
+way to handle this situation is to give the "-stop motor" signal priority 
+over any others, and force data transfer termination during it's activation.
+
+- Check out my FDS loader project (which uploads *.FDS files to the RAM 
+adaptor) for source code to my working disk drive emulator.
+
+
+****************************************************
+*Getting FDS disk games to boot that normally don't*
+****************************************************
+After finishing the FDS loader project, I discovered a way to get FDS games 
+that normally don't work to now boot up successfully. The trick to doing 
+this lies in a part on the disk drive mechanism itself.
+
+When you insert a disk into the drive, the disk bay lowers down, and 
+eventually the bottom side of the magnetic floppy contacts the head (the 
+head is at a constant altitude). On the top side of the magnetic floppy, 
+some kind of arm with a brush on it lowers onto the floppy's surface, and 
+applies pressure on the floppy against the head, to allow for closer (or 
+better) contact with it.
+
+I have discovered that by applying some extra force on this brush arm, disk 
+games that regularly do not boot up, will now work. However, do not apply 
+too much force, otherwise the friction from the brush will slow down the 
+disk's RPM, and the RAM adaptor will not be able to boot from it anyway, 
+since the transfer rate will be out of range.
+
+The permanent fix to this is to increase the tension that the spring already 
+in there applies. To remove the spring, you must pop out that pin that it's 
+wrapped around (which is also the pin that supports the arm as well). With 
+the front of the drive facing towards you, chisel the pin from the right 
+side of it to pop it out.
+
+It is necessary to re-torque the spring, since simply adding an extra 
+revolution to the windings will offer too much tension. Use both your hands 
+(you may need to use needle-nosed pliers) to twist the spring in the SAME 
+direction in that it is supposed to be applying pressure in. This will 
+increase the size of the radius of the spring's coil. Don't overdue the 
+re-torquing; hand strength is all you need to do it. After this, the spring 
+is ready to be put back into the drive. It will be a little tricky to put 
+the spring back onto the pin (with the arm kind of in the way), so this 
+requires patience. If putting it back in seems easy, this means that you're 
+not adding enough revolutions to the windings of the spring for force. At 
+any rate, make sure that the force applied after you put the spring back in 
+is a good deal more than when you removed it.
+
+For an easier way of increasing the pressure the brush arm applies against 
+the floppy without having to adjust/replace the arm's spring, I'd try taping 
+some weight onto the arm (for example, a few pennies or dimes would make up 
+the weight well). Personally, I tried this before re-torquing the spring, 
+and it didn't work out very well (mostly because the tape was always 
+brushing against something).
+
+As for why certain games work with the default pressure, while others 
+require more, I would speculate that the surface of the disks in question 
+are rippled, possibly left that way after years of use. Without enough 
+pressure, the ripples are the only thing the head makes contact with, which 
+is only a fraction of the area it needs to contact in order to read the 
+magnetic data reliably.
+
+But don't take my word for it- just take a look at the surfaces of FDS disks 
+that boot, and compare it to ones that don't. You'll find that working disks 
+have a uniform surface, while the others will have tracks of wear on them, 
+with most of the wear appearing at the end of the disk (the most inner 
+tracks). The wear appears at the end because this is where the disk head is 
+put to rest after every disk scan.
+
+
+*******************************
+*Circumventing copy protection*
+*******************************
+
+Hardware disk copy protection
+-----------------------------
+Apparently, Nintendo had designed FDS disk drive units so that they cannot 
+reprogram entire disks, while still somehow being able to write the contents 
+of individual files to the end of disks. Now, there's a lot of undocumented 
+things going on inside the disk drive unit, so I'm just going to say that 
+there are two evil IC's you've got to watch out for inside the FDS disk 
+drive- the 3213, and the 3206. There is a collection of 6 "FDS-COPY" jpegs 
+over at NESdev which (pg. 4 right side, and pg. 5) give a pretty graphic 
+overview of the steps involved in modding a stock FDS disk drive, so that it 
+may reprogram disks. Although I haven't built the specific circuit described 
+in the jpegs, I had designed & built a similar working circuit to defeat the 
+FDS's evil copy protection circuitry, with excellent results.
+
+
+Software disk copy protection
+-----------------------------
+Special thanks to Chris Covell for bringing this to my attention.
+
+Apparently, some FDS disks implement a very simple copy protection scheme, 
+which the game relies on in order for the game to refuse to work on the 
+copied disk. Normally, the number of files that exist on an FDS disk is 
+stored in the second block recorded on it. However, some games maintain 
+"invisible" files, which are basically files that exist beyond what the file 
+count number in the file count block indicates. This poses somewhat of a 
+problem for copy software like FDSLOADR, since these tools rely on the file 
+count block, and don't assume that there is any valid data past the last 
+file found on the disk. This means that when these types of disks are 
+copied, the invisible files will be lost, and when the game loads the files 
+that do exist, the game's going to give the user heat about there being a 
+file missing or something, gumming up the works. However in practice, when an 
+FDS disk is programmed, the unused end of the disk is usually completely 
+zeroed out, and this makes detecting the end of the disk simple: just wait 
+to find a GAP period of extreme length. Except in rare cases, this model for 
+detecting the true end of an FDS disk should generally provide the best 
+results for copying the complete contents for all types of FDS disks.
+
+
+Physical disk lockout mechanism
+-------------------------------
+Ever wonder why Nintendo engraved their company's name along the handle edge 
+of all FDS disks? Inside the FDS disk drive bay, sitting just behind the 
+lower part of the front black plastic faceplate, is a little plastic block 
+with the letters "Nintendo" carved out of a hard plastic block. This 
+basically forces disks that don't have holes in those locations from 
+completely loading into the drive, circumventing usage. Now while many 
+companies made FDS disks with those holes cut out, I'm sure there must be 
+some disks out there that are compatible with the FDS, but don't have the 
+holes. So, the solution is to simply disassemble the FDS disk drive, remove 
+the disk cage, and remove the two screws securing the "Nintendo" 
+letterblock.
+
+
+**********************
+*ROM BIOS disassembly*
+**********************
+Special thanks to Tennessee Carmel-Veilleux for DCC6502, a 6502 code 
+disassembler he wrote, which I used for this disassembly here.
+
+
+notes about disassembly
+-----------------------
+- tables like the one below display the bytes (hexadecimal pairs) as they 
+would appear in the actual ROM (big endian). only multi-byte numbers 
+preceded by a "$" are stored in little endian.
+
+- a few subroutines in this code work with hard-coded parameters (this is 
+data stored in the instruction stream following the JSR instruction). For 
+subroutines that use hard-coded parameters, you will see a JSR $xxxx, 
+followed by a comma, and the actual hardcoded (immediate) data. The 
+subroutines of course adjust the return address to make sure program control 
+returns to the address _after_ the hard-coded parameters.
+
+- not all the code has been commented, but I have gone over every single 
+disk I/O related subroutine (which I could) find with a fine-toothed comb, 
+and have (hopefully) made adequate comments for easier comprehension of 
+their operation.
+
+
+;############################################################################
+;############### FDS ROM BIOS disassembly ###################################
+;############################################################################
+$E000 DB  00
+
+;FONT BITMAPS
+384CC6C6C66438001838181818187E00
+7CC60E3C78E0FE007E0C183C06C67C00
+1C3C6CCCFE0C0C00FCC0FC0606C67C00
+3C60C0FCC6C67C00FEC60C1830303000
+7CC6C67CC6C67C007CC6C67E060C7800
+386CC6C6FEC6C600FCC6C6FCC6C6FC00
+3C66C0C0C0663C00F8CCC6C6C6CCF800
+FEC0C0FCC0C0FE00FEC0C0FCC0C0C000
+3E60C0DEC6667E00C6C6C6FEC6C6C600
+7E18181818187E001E060606C6C67C00
+C6CCD8F0F8DCCE006060606060607E00
+C6EEFEFED6C6C600C6E6F6FEDECEC600
+7CC6C6C6C6C67C00FCC6C6C6FCC0C000
+7CC6C6C6DECC7A00FCC6C6CEF8DCCE00
+78CCC07C06C67C007E18181818181800
+C6C6C6C6C6C67C00C6C6C6EE7C381000
+C6C6D6FEFEEEC600C6EE7C387CEEC600
+6666663C18181800FE0E1C3870E0FE00
+00000000000000000000000030302000
+0000000030300000000000006C6C0800
+3844BAAAB2AA4438
+
+;131 clock cycle delay
+Delay131: PHA
+$E14A LDA #$16
+$E14C SEC
+$E14D SBC #$01
+$E14F BCS $E14D
+$E151 PLA
+$E152 RTS
+
+;millisecond delay timer. Delay in clock cycles is: 1790*Y+5.
+MilSecTimer:  LDX $00
+$E155 LDX #$fe
+$E157 NOP
+$E158 DEX
+$E159 BNE $E157
+$E15B CMP $00
+$E15D DEY
+$E15E BNE MilSecTimer
+$E160 RTS
+
+;disable playfield & objects
+DisPfOBJ: LDA $FE
+$E163 AND #$e7
+$E165 STA $FE
+$E167 STA $2001;  [NES] PPU setup #2
+$E16A RTS
+
+;enable playfield & objects
+EnPfOBJ:  LDA $FE
+$E16D ORA #$18
+$E16F BNE $E165
+
+;disable objects
+DisOBJs:  LDA $FE
+$E173 AND #$ef
+$E175 JMP $E165
+
+;enable objects
+EnOBJs: LDA $FE
+$E17A ORA #$10
+$E17C BNE $E165
+
+;disable playfield
+DisPF:  LDA $FE
+$E180 AND #$f7
+$E182 JMP $E165
+
+;enable playfield
+EnPF: LDA $FE
+$E187 ORA #$08
+$E189 BNE $E165
+
+
+;############################################################################
+;NMI program control#########################################################
+;############################################################################
+;this routine controls what action occurs on a NMI, based on [$0100].
+
+;[$0100]    program control on NMI
+;-------    ----------------------
+;00xxxxxx:  VINTwait was called; return PC to address that called VINTwait
+;01xxxxxx:  use [$DFF6] vector
+;10xxxxxx:  use [$DFF8] vector
+;11xxxxxx:  use [$DFFA] vector
+
+
+;NMI branch target
+NMI:  BIT $0100
+$E18E BPL $E198
+$E190 BVC $E195
+$E192 JMP ($DFFA);  11xxxxxx
+$E195 JMP ($DFF8);  10xxxxxx
+$E198 BVC $E19D
+$E19A JMP ($DFF6);  01xxxxxx
+
+;disable further VINTs  00xxxxxx
+$E19D LDA $FF
+$E19F AND #$7f
+$E1A1 STA $FF
+$E1A3 STA $2000;  [NES] PPU setup #1
+$E1A6 LDA $2002;  [NES] PPU status
+
+;discard interrupted return address (should be $E1C5)
+$E1A9 PLA
+$E1AA PLA
+$E1AB PLA
+
+;restore byte at [$0100]
+$E1AC PLA
+$E1AD STA $0100
+
+;restore A
+$E1B0 PLA
+$E1B1 RTS
+
+
+;----------------------------------------------------------------------------
+;wait for VINT
+VINTwait: PHA;  save A
+$E1B3 LDA $0100
+$E1B6 PHA;  save old NMI pgm ctrl byte
+$E1B7 LDA #$00
+$E1B9 STA $0100;  set NMI pgm ctrl byte to 0
+
+;enable VINT
+$E1BC LDA $FF
+$E1BE ORA #$80
+$E1C0 STA $FF
+$E1C2 STA $2000;  [NES] PPU setup #1
+
+;infinite loop
+$E1C5 BNE $E1C5
+
+
+;############################################################################
+;IRQ program control#########################################################
+;############################################################################
+;this routine controls what action occurs on a IRQ, based on [$0101].
+IRQ:  BIT $0101
+$E1CA BMI $E1EA
+$E1CC BVC $E1D9
+
+;disk transfer routine ([$0101] = 01xxxxxx)
+$E1CE LDX $4031
+$E1D1 STA $4024
+$E1D4 PLA
+$E1D5 PLA
+$E1D6 PLA
+$E1D7 TXA
+$E1D8 RTS
+
+;disk byte skip routine ([$0101] = 00nnnnnn; n is # of bytes to skip)
+;this is mainly used when the CPU has to do some calculations while bytes
+;read off the disk need to be discarded.
+$E1D9 PHA
+$E1DA LDA $0101
+$E1DD SEC
+$E1DE SBC #$01
+$E1E0 BCC $E1E8
+$E1E2 STA $0101
+$E1E5 LDA $4031
+$E1E8 PLA
+$E1E9 RTI
+
+;[$0101] = 1Xxxxxxx
+$E1EA BVC $E1EF
+$E1EC JMP ($DFFE);  11xxxxxx
+
+;disk IRQ acknowledge routine ([$0101] = 10xxxxxx).
+;don't know what this is used for, or why a delay is put here.
+$E1EF PHA
+$E1F0 LDA $4030
+$E1F3 JSR Delay131
+$E1F6 PLA
+$E1F7 RTI
+
+
+;############################################################################
+;load files##################################################################
+;############################################################################
+;loads files from disk into memory.
+
+;params
+;------
+;RETaddr  pointer to 10-byte disk header compare string
+;RETaddr+2  pointer to list of files to identify & load
+
+
+;the disk header compare string is compared against the first 10 bytes to
+;come after the '*NINTENDO-HVC*' string in the first block. if any matches
+;fail, an error is generated. If the compare string has a -1 in it, that
+;skips the testing of that particular byte. Generally, this string is used 
+to
+;verify that the disk side and number data of a disk is correct.
+
+;the file ID list is simply a list of files to be loaded from disk. These
+;ID numbers (1 byte each) are tested against the file ID numbers of the
+;individual files on disk, and matched file IDs results in that particular
+;file being loaded into memory. The list is assumed to contain 20 ID's, but
+;-1 can be placed at the end of the string to terminate the search
+;prematurely. If -1 is the first ID in the string, this means that a system
+;boot is to commence. Boot files are loaded via the BootID code in the first
+;block of the disk. Files that match or are less than this BootID code are
+;the ones that get loaded. Every time a matching file is found, a counter is
+;incremented. When the load finishes, this count will indicate how many 
+files
+;were found. No error checking occurs with the found file count.
+
+;if an error occurs on the first try, the subroutine will make an additional
+;attempt to read the disk, before returning with an error code other than 0.
+
+
+;returns error # (if any) in A, and count of found files in Y.
+
+
+LoadFiles:  LDA #$00
+$E1FA STA $0E
+$E1FC LDA #$ff; get 2 16-bit pointers
+$E1FE JSR GetHCPwNWPchk
+$E201 LDA $0101
+$E204 PHA
+$E205 LDA #$02; error retry count
+$E207 STA $05
+$E209 JSR $E21A
+$E20C BEQ $E212;  return address if errors occur
+$E20E DEC $05;  decrease retry count
+$E210 BNE $E209
+$E212 PLA
+$E213 STA $0101
+$E216 LDY $0E
+$E218 TXA
+$E219 RTS
+
+$E21A JSR ChkDiskHdr
+$E21D JSR Get#ofFiles; returns # in [$06]
+$E220 LDA $06
+$E222 BEQ $E233;  skip it all if none
+$E224 LDA #$03
+$E226 JSR CheckBlkType
+$E229 JSR FileMatchTest
+$E22C JSR LoadData
+$E22F DEC $06
+$E231 BNE $E224
+$E233 JSR XferDone
+$E236 RTS
+
+
+;############################################################################
+;Write file & set file count#################################################
+;############################################################################
+;writes a single file to the last position on the disk, according to the
+;disk's file count. uses header compare string, and pointer to file header
+;structure (described in SaveData subroutine).
+
+;this is the only mechanism the ROM BIOS provides for writing data to the
+;disk, and it only lets you write one stinking file at a time! if that isn't
+;enough, the disk's file count is modified every time this routine is called
+;so that the disk logically ends after the written file.
+
+;logic:
+
+;- if (WriteFile called) and (A <> -1), DiskFileCount := A
+;- disk is advanced to the end, in accordance to DiskFileCount
+;- writes data pointed to by RETaddr+2 to end of disk
+;- DiskFileCount is increased
+;- data is read back, and compared against data written
+;- if error occurs (like the comparison fails), DiskFileCount is decreased
+
+;note that DiskFileCount is the actual recorded file count on the disk.
+
+
+;load hardcoded parameters
+AppendFile: LDA #$ff; use current DiskFileCount
+WriteFile:  STA $0E;  specify file count in A
+$E23B LDA #$ff
+$E23D JSR GetHCPwWPchk; loads Y with [$0E] on error
+$E240 LDA $0101
+$E243 PHA
+
+;write data to end of disk
+$E244 LDA #$03; 2 tries
+$E246 STA $05
+$E248 DEC $05
+$E24A BEQ $E265
+$E24C JSR WriteLastFile
+$E24F BNE $E248
+
+;verify data at end of disk
+$E251 LDA #$02
+$E253 STA $05
+$E255 JSR CheckLastFile
+$E258 BEQ $E265
+$E25A DEC $05
+$E25C BNE $E255
+
+;if error occurred during read-back, hide last file
+$E25E STX $05;  save error #
+$E260 JSR SetFileCnt
+$E263 LDX $05;  restore error #
+
+;return
+$E265 PLA
+$E266 STA $0101
+$E269 TXA
+$E26A RTS
+
+WriteLastFile:  JSR ChkDiskHdr
+$E26E LDA $0E
+$E270 CMP #$ff
+$E272 BNE $E288
+$E274 JSR Get#ofFiles
+$E277 JSR SkipFiles;  advance to end of disk
+$E27A LDA #$03
+$E27C JSR WriteBlkType
+$E27F LDA #$00
+$E281 JSR SaveData; write out last file
+$E284 JSR XferDone
+$E287 RTS
+$E288 STA $06
+$E28A JSR Set#ofFiles
+$E28D JMP $E277
+
+CheckLastFile:  JSR ChkDiskHdr
+$E293 LDX $06;  load current file count
+$E295 INX
+$E296 TXA
+$E297 JSR Set#ofFiles; increase current file count
+$E29A JSR SkipFiles;  skip to last file
+$E29D LDA #$03
+$E29F JSR CheckBlkType
+$E2A2 LDA #$ff
+$E2A4 JSR SaveData; verify last file
+$E2A7 JSR XferDone
+$E2AA RTS
+
+;sets file count via [$06]
+SetFileCnt: JSR ChkDiskHdr
+$E2AE LDA $06
+$E2B0 JSR Set#ofFiles
+$E2B3 JSR XferDone
+$E2B6 RTS
+
+
+;############################################################################
+;adjust file count###########################################################
+;############################################################################
+;reads disk's original file count, then subtracts the A value from it and
+;writes the difference to the disk as the new file count. uses header 
+compare
+;string. if A is greater than original disk file count, error 31 is 
+returned.
+
+;this routine has 2 entry points. one which adjusts the current file count
+;via A, and one which simply sets the file count to the A value. Since this
+;routine makes a disk read cycle no matter which entry point is called, it 
+is
+;better to use SetFileCnt0/1 to simply set the disk file count to A.
+
+SetFileCnt2:  LDX #$ff; use A value
+$E2B9 BNE $E2BD
+AdjFileCnt: LDX #$00; use FileCnt-A
+$E2BD STX $09
+$E2BF JSR GetHCPwWPchk
+$E2C2 LDA $0101
+$E2C5 PHA
+
+;get disk file count
+$E2C6 LDA #$03; 2 tries
+$E2C8 STA $05
+$E2CA DEC $05
+$E2CC BEQ $E2F1
+$E2CE JSR GetFileCnt
+$E2D1 BNE $E2CA
+
+;calculate difference
+$E2D3 LDA $06;  load file count
+$E2D5 SEC
+$E2D6 SBC $02;  calculate difference
+$E2D8 LDX $09
+$E2DA BEQ $E2DE
+$E2DC LDA $02;  use original accumulator value
+$E2DE LDX #$31;
+$E2E0 BCC $E2F1;  branch if A is less than current file count
+$E2E2 STA $06
+
+;set disk file count
+$E2E4 LDA #$02; 2 tries
+$E2E6 STA $05
+$E2E8 JSR SetFileCnt
+$E2EB BEQ $E2F1
+$E2ED DEC $05
+$E2EF BNE $E2E8
+
+$E2F1 PLA
+$E2F2 STA $0101
+$E2F5 TXA
+$E2F6 RTS
+
+;stores file count in [$06]
+GetFileCnt: JSR ChkDiskHdr
+$E2FA JSR Get#ofFiles
+$E2FD JSR XferDone
+$E300 RTS
+
+
+;############################################################################
+;set disk file count#########################################################
+;############################################################################
+;this routine only rewrites a disk's file count (stored in block 2; 
+specified
+;in A). no other files are read/written after this. uses header compare
+;string.
+
+SetFileCnt1:  LDX #$01; add 1 to value in A
+$E303 BNE $E307
+SetFileCnt0:  LDX #$00; normal entry point
+$E307 STX $07
+$E309 JSR GetHCPwWPchk
+$E30C LDA $0101
+$E30F PHA
+$E310 CLC
+$E311 LDA $02;  initial A value (or 3rd byte in HC parameter)
+$E313 ADC $07
+$E315 STA $06
+$E317 LDA #$02; 2 tries
+$E319 STA $05
+$E31B JSR SetFileCnt
+$E31E BEQ $E324
+$E320 DEC $05
+$E322 BNE $E31B
+$E324 PLA
+$E325 STA $0101
+$E328 TXA
+$E329 RTS
+
+
+;############################################################################
+;get disk information########################################################
+;############################################################################
+;this procedure reads the whole disk, and only returns information like
+;disk size, filenames, etc.
+
+;params
+;------
+;RETaddr  pointer to destination address for info. to collect
+
+
+;info. format
+;------------
+;0  1 manufacturer code
+;1  4 game name string
+;5  1 game version
+;6  1 disk side #
+;7  1 disk #1
+;8  1 disk #2
+;9  1 disk #3
+;A  1 # of files on disk
+
+; (the following block will appear for as many files as the files on disk
+; byte indicates)
+
+;B  1 file ID code
+;C  8 file name (ASCII)
+
+; (the following is present after the last file info block)
+
+;x  1 disk size high byte
+;x+1  1 disk size low  byte
+
+
+;returns error # (if any) in A.
+
+GetDiskInfo:  LDA #$00
+$E32C JSR GetHCPwNWPchk; get 1 16-bit pointer; put A in [$02]
+$E32F LDA $0101
+$E332 PHA
+$E333 LDA #$02
+$E335 STA $05
+$E337 JSR $E346
+$E33A BEQ $E340;  escape if no errors
+$E33C DEC $05
+$E33E BNE $E337
+$E340 PLA
+$E341 STA $0101
+$E344 TXA
+$E345 RTS
+
+;start up disk read process
+$E346 JSR StartXfer;  verify FDS string at beginning of disk
+$E349 LDA $00
+$E34B STA $0A
+$E34D LDA $01
+$E34F STA $0B
+$E351 LDY #$00
+$E353 STY $02
+$E355 STY $03
+
+;load next 10 bytes off disk into RAM at Ptr($0A)
+$E357 JSR XferByte
+$E35A STA ($0A),Y
+$E35C INY
+$E35D CPY #$0a
+$E35F BNE $E357
+$E361 JSR AddYtoPtr0A; add 10 to Word($0A)
+
+;discard rest of data in this file (31 bytes)
+$E364 LDY #$1f
+$E366 JSR XferByte
+$E369 DEY
+$E36A BNE $E366
+
+;get # of files
+$E36C JSR EndOfBlkRead
+$E36F JSR Get#ofFiles; stores it in [$06]
+$E372 LDY #$00
+$E374 LDA $06
+$E376 STA ($0A),Y;  store # of files in ([$0A])
+$E378 BEQ $E3CB;  branch if # of files = 0
+
+;get info for next file
+$E37A LDA #$03
+$E37C JSR CheckBlkType
+$E37F JSR XferByte; discard file sequence #
+$E382 JSR XferByte; file ID code
+$E385 LDY #$01
+$E387 STA ($0A),Y;  store file ID code
+
+;store file name string (8 letters)
+$E389 INY
+$E38A JSR XferByte
+$E38D STA ($0A),Y
+$E38F CPY #$09
+$E391 BNE $E389
+
+$E393 JSR AddYtoPtr0A; advance 16-bit dest ptr
+$E396 JSR XferByte; throw away low  load address
+$E399 JSR XferByte; throw away high load address
+
+;Word($02) += $105 + FileSize
+$E39C CLC
+$E39D LDA #$05
+$E39F ADC $02
+$E3A1 STA $02
+$E3A3 LDA #$01
+$E3A5 ADC $03
+$E3A7 STA $03
+$E3A9 JSR XferByte; get low  FileSize
+$E3AC STA $0C
+$E3AE JSR XferByte; get high FileSize
+$E3B1 STA $0D
+$E3B3 CLC
+$E3B4 LDA $0C
+$E3B6 ADC $02
+$E3B8 STA $02
+$E3BA LDA $0D
+$E3BC ADC $03
+$E3BE STA $03
+$E3C0 LDA #$ff
+$E3C2 STA $09
+$E3C4 JSR RdData; dummy read data off disk
+$E3C7 DEC $06;  decrease file count #
+$E3C9 BNE $E37A
+
+;store out disk size
+$E3CB LDA $03
+$E3CD LDY #$01; fix-up from RdData
+$E3CF STA ($0A),Y
+$E3D1 LDA $02
+$E3D3 INY
+$E3D4 STA ($0A),Y
+$E3D6 JSR XferDone
+$E3D9 RTS
+
+;adds Y to Word(0A)
+AddYtoPtr0A:  TYA
+$E3DB CLC
+$E3DC ADC $0A
+$E3DE STA $0A
+$E3E0 LDA #$00
+$E3E2 ADC $0B
+$E3E4 STA $0B
+$E3E6 RTS
+
+
+;############################################################################
+;get hard-coded  pointer(s)##################################################
+;############################################################################
+;this routine does 3 things. First, it fetches 1 or 2 hardcoded 16-bit
+;pointers that follow the second return address. second, it checks the
+;disk set or even write-protect status of the disk, and if the checks fail,
+;the first return address on the stack is discarded, and program control is
+;returned to the second return address. finally, it saves the position of
+;the stack so that when an error occurs, program control will be returned to
+;the same place.
+
+;params
+;------
+;2nd call address  1 or 2 16-bit pointers
+
+;A  -1  2 16-bit pointers are present
+; other values  1 16-bit pointer present
+
+
+;rtns (no error)
+;---------------
+;PC original call address
+
+;A  00
+
+;[$00]  where parameters were loaded (A is placed in [$02] if not -1)
+
+
+;(error)
+;-------
+;PC second call address
+
+;Y  byte stored in [$0E]
+
+;A  01  if disk wasn't set
+; 03  if disk is write-protected
+
+
+;entry points
+GetHCPwNWPchk:  SEC;  don't do write-protect check
+$E3E8 BCS $E3EB
+GetHCPwWPchk: CLC;  check for write protection
+
+;load 2nd return address into Ptr($05)
+$E3EB TSX
+$E3EC DEX
+$E3ED STX $04;  store stack pointer-1 in [$04]
+$E3EF PHP
+$E3F0 STA $02
+$E3F2 LDY $0104,X
+$E3F5 STY $05
+$E3F7 LDY $0105,X
+$E3FA STY $06
+
+;load 1st 16-bit parameter into Ptr($00)
+$E3FC TAX
+$E3FD LDY #$01
+$E3FF LDA ($05),Y
+$E401 STA $00
+$E403 INY
+$E404 LDA ($05),Y
+$E406 STA $01
+$E408 LDA #$02
+
+;load 2nd 16-bit parameter into Ptr($02) if A was originally -1
+$E40A CPX #$ff
+$E40C BNE $E41A
+$E40E INY
+$E40F LDA ($05),Y
+$E411 STA $02
+$E413 INY
+$E414 LDA ($05),Y
+$E416 STA $03
+$E418 LDA #$04
+
+;increment 2nd return address appropriately
+$E41A LDX $04
+$E41C CLC
+$E41D ADC $05
+$E41F STA $0104,X
+$E422 LDA #$00
+$E424 ADC $06
+$E426 STA $0105,X
+
+;test disk set status flag
+$E429 PLP
+$E42A LDX #$01; disk set error
+$E42C LDA $4032
+$E42F AND #$01
+$E431 BNE $E43E
+$E433 BCS $E444;  skip write-protect check
+
+;test write-protect status
+$E435 LDX #$03; write-protect error
+$E437 LDA $4032
+$E43A AND #$04
+$E43C BEQ $E444
+
+;discard return address if tests fail
+$E43E PLA
+$E43F PLA
+$E440 LDY $0E
+$E442 TXA
+$E443 CLI
+$E444 RTS
+
+
+;############################################################################
+;disk header check###########################################################
+;############################################################################
+;routine simply compares the first 10 bytes on the disk coming after the FDS
+;string, to 10 bytes pointed to by Ptr($00). To bypass the checking of any
+;byte, a -1 can be placed in the equivalent place in the compare string.
+;Otherwise, if the comparison fails, an appropriate error will be generated.
+
+ChkDiskHdr: JSR StartXfer;  check FDS string
+$E448 LDX #$04
+$E44A STX $08
+$E44C LDY #$00
+$E44E JSR XferByte
+$E451 CMP ($00),Y;  compares code to byte stored at [Ptr($00)+Y]
+$E453 BEQ $E464
+$E455 LDX $08
+$E457 CPX #$0a
+$E459 BNE $E45D
+$E45B LDX #$10
+$E45D LDA ($00),Y
+$E45F CMP #$ff
+$E461 JSR XferFailOnNEQ
+$E464 INY
+$E465 CPY #$01
+$E467 BEQ $E46D
+$E469 CPY #$05
+$E46B BCC $E46F
+$E46D INC $08
+$E46F CPY #$0a
+$E471 BNE $E44E
+$E473 JSR XferByte; boot read file code
+$E476 STA $08
+$E478 LDY #$1e; 30 iterations
+$E47A JSR XferByte; dummy read 'til end of block
+$E47D DEY
+$E47E BNE $E47A
+$E480 JSR EndOfBlkRead
+$E483 RTS
+
+
+;############################################################################
+;file count block routines###################################################
+;############################################################################
+;these routines specifically handle reading & writing of the file count 
+block
+;stored on FDS disks.
+
+;loads # of files recorded in block type #2 into [$06]
+Get#ofFiles:  LDA #$02
+$E486 JSR CheckBlkType
+$E489 JSR XferByte
+$E48C STA $06
+$E48E JSR EndOfBlkRead
+$E491 RTS
+
+;writes # of files (via A) to be recorded on disk.
+Set#ofFiles:  PHA
+$E493 LDA #$02
+$E495 JSR WriteBlkType
+$E498 PLA
+$E499 JSR XferByte; write out disk file count
+$E49C JSR EndOfBlkWrite
+$E49F RTS
+
+
+;############################################################################
+;file match test#############################################################
+;############################################################################
+;this routine uses a byte string pointed at by Ptr($02) to tell the disk
+;system which files to load. The file ID's number is searched for in the
+;string. if an exact match is found, [$09] is 0'd, and [$0E] is incremented.
+;if no matches are found after 20 bytes, or a -1 entry is encountered, [$09]
+;is set to -1. if the first byte in the string is -1, the BootID number is
+;used for matching files (any FileID that is not greater than the BootID
+;qualifies as a match).
+
+;logic:
+
+;if String[0] = -1 then
+;  if FileID <= BootID then
+;    [$09]:=$00
+;    Inc([$0E])
+
+;else
+;  I:=0
+;  while (String[I]<>FileID) or (String[I]<>-1) or (I<20) do Inc(I)
+
+;  if String[I] = FileID then
+;    [$09]:=$00
+;    Inc([$0E])
+
+;  else
+;    [$09]:=$FF;
+
+FileMatchTest:  JSR XferByte; file sequence #
+$E4A3 JSR XferByte; file ID # (gets loaded into X)
+$E4A6 LDA #$08; set IRQ mode to skip next 8 bytes
+$E4A8 STA $0101
+$E4AB CLI
+$E4AC LDY #$00
+$E4AE LDA ($02),Y
+$E4B0 CMP #$ff; if Ptr($02) = -1 then test boot ID code
+$E4B2 BEQ $E4C8
+
+$E4B4 TXA;  file ID #
+$E4B5 CMP ($02),Y
+$E4B7 BEQ $E4CE
+$E4B9 INY
+$E4BA CPY #$14
+$E4BC BEQ $E4C4
+$E4BE LDA ($02),Y
+$E4C0 CMP #$ff
+$E4C2 BNE $E4B4
+
+$E4C4 LDA #$ff
+$E4C6 BNE $E4D2
+$E4C8 CPX $08;  compare boot read file code to current
+$E4CA BEQ $E4CE
+$E4CC BCS $E4D2;  branch if above (or equal, but isn't possible)
+$E4CE LDA #$00
+$E4D0 INC $0E
+$E4D2 STA $09
+$E4D4 LDA $0101
+$E4D7 BNE $E4D4;  wait until all 8 bytes have been read
+$E4D9 RTS
+
+
+;############################################################################
+;skip files##################################################################
+;############################################################################
+;this routine uses the value stored in [$06] to determine how many files to
+;dummy-read (skip over) from the current file position.
+
+SkipFiles:  LDA $06
+$E4DC STA $08
+$E4DE BEQ $E4F8;  branch if file count = 0
+$E4E0 LDA #$03
+$E4E2 JSR CheckBlkType
+$E4E5 LDY #$0a; skip 10 bytes
+$E4E7 JSR XferByte
+$E4EA DEY
+$E4EB BNE $E4E7
+$E4ED LDA #$ff
+$E4EF STA $09
+$E4F1 JSR LoadData; dummy read file data
+$E4F4 DEC $08
+$E4F6 BNE $E4E0
+$E4F8 RTS
+
+
+;############################################################################
+;load file off disk into memory##############################################
+;############################################################################
+;loads data from current file off disk into a destination address specified
+;by the file's header information stored on disk.
+
+;params
+;------
+;[$09]: dummy read only (if not zero)
+
+
+LoadData: LDY #$00
+$E4FB JSR Xfer1stByte
+$E4FE STA $000A,Y
+$E501 INY
+$E502 CPY #$04
+$E504 BNE $E4FB
+
+;Ptr($0A):  destination address
+;Ptr($0C):  byte transfer count
+
+RdData: JSR DecPtr0C
+$E509 JSR XferByte; get kind of file
+$E50C PHA
+$E50D JSR EndOfBlkRead
+$E510 LDA #$04
+$E512 JSR CheckBlkType
+$E515 LDY $09
+$E517 PLA
+$E518 BNE $E549;  copy to VRAM if not zero
+
+$E51A CLC
+$E51B LDA $0A
+$E51D ADC $0C
+$E51F LDA $0B
+$E521 ADC $0D
+$E523 BCS $E531;  branch if (DestAddr+XferCnt)<10000h
+
+;if DestAddr < 0200h then do dummy copying
+$E525 LDA $0B
+$E527 CMP #$20
+$E529 BCS $E533;  branch if DestAddr >= 2000h
+$E52B AND #$07
+$E52D CMP #$02
+$E52F BCS $E533;  branch if DestAddr >= 0200h
+$E531 LDY #$ff
+
+$E533 JSR XferByte
+$E536 CPY #$00
+$E538 BNE $E542
+$E53A STA ($0A),Y
+$E53C INC $0A
+$E53E BNE $E542
+$E540 INC $0B
+$E542 JSR DecPtr0C
+$E545 BCS $E533
+$E547 BCC $E572
+
+;VRAM data copy
+$E549 CPY #$00
+$E54B BNE $E563
+$E54D LDA $FE
+$E54F AND #$e7
+$E551 STA $FE
+$E553 STA $2001;  [NES] PPU setup #2
+$E556 LDA $2002;  [NES] PPU status
+$E559 LDA $0B
+$E55B STA $2006;  [NES] VRAM address select
+$E55E LDA $0A
+$E560 STA $2006;  [NES] VRAM address select
+
+$E563 JSR XferByte
+$E566 CPY #$00
+$E568 BNE $E56D
+$E56A STA $2007;  [NES] VRAM data
+$E56D JSR DecPtr0C
+$E570 BCS $E563
+
+$E572 LDA $09
+$E574 BNE $E57A
+$E576 JSR EndOfBlkRead
+$E579 RTS
+$E57A JSR XferByte
+$E57D JSR XferByte
+$E580 JMP ChkDiskSet
+
+
+;############################################################################
+;load size & source address operands into $0A..$0D###########################
+;############################################################################
+;this routine is used only for when writing/verifying file data on disk. it
+;uses the data string at Ptr($02) to load size and source address operands
+;into Ptr($0C) and Ptr($0A), respectfully. It also checks if the source
+;address is from video memory, and programs the PPU address register if so.
+
+;load size of file via string offset $0B into Word($0C)
+LoadSiz&Src:  LDY #$0b
+$E585 LDA ($02),Y;  file size LO
+$E587 STA $0C
+$E589 INY
+$E58A LDA ($02),Y;  file size HI
+$E58C STA $0D
+
+;load source address via string offset $0E into Ptr($0A)
+$E58E LDY #$0e
+$E590 LDA ($02),Y;  source address LO
+$E592 STA $0A
+$E594 INY
+$E595 LDA ($02),Y;  source address HI
+$E597 STA $0B
+
+;load source type byte (anything other than 0 means use PPU memory)
+$E599 INY
+$E59A LDA ($02),Y
+$E59C BEQ $E5B1
+
+;program PPU address registers with source address
+$E59E JSR DisPfOBJ
+$E5A1 LDA $2002;  reset flip-flop
+$E5A4 LDA $0B
+$E5A6 STA $2006;  store HI address
+$E5A9 LDA $0A
+$E5AB STA $2006;  store LO address
+$E5AE LDA $2007;  discard first read
+$E5B1 JSR DecPtr0C; adjust transfer count for range (0..n-1)
+$E5B4 RTS
+
+
+;############################################################################
+;save data in memory to file on  disk########################################
+;############################################################################
+;this routine does 2 things, which involve working with file data. if called
+;with A set to 0, file data is written to disk from memory. if called with
+;A <> 0, file data on disk is verified (compared to data in memory). 
+Ptr($02)
+;contains the address to a 17-byte structure described below. Note that the
+;disk transfer direction bit ($4025.2) must be set in sync with A, since 
+this
+;routine will not modify it automatically.
+
+;00 1 ID
+;01 8 Name
+;09 2 load address
+;0B 2 Size
+;0D 1 type (0 = CPU data)
+;0E 2 source address of file data (NOT written to disk)
+;10 1 source address type (0 = CPU; NOT written to disk)
+;11
+
+;the first 14 bytes of the structure are used directly as the file header
+;data. the file sequence # part of the file header is specified separately
+;(in [$06]). Data at offset 0E and on is not used as file header data.
+
+;offset 0E of the structure specifies the address in memory which the actual
+;file data resides. offset 10 specifies the source memory type (0 = CPU;
+;other = PPU).
+
+
+;entry point
+SaveData: STA $09;  value of A is stored in [$09]
+$E5B7 LDA $06;  load current file #
+$E5B9 JSR XferByte; write out file sequence # (from [$06])
+$E5BC LDX $09
+$E5BE BEQ $E5C7;  [$09] should be set to jump when writing
+$E5C0 LDX #$26; error #
+$E5C2 CMP $06;  compare recorded sequence # to what it should be
+$E5C4 JSR XferFailOnNEQ
+
+;loop to write/check entire file header block (minus the file sequence #)
+$E5C7 LDY #$00
+$E5C9 LDA ($02),Y;  load header byte
+$E5CB JSR XferByte; write it out (or read it in)
+$E5CE LDX $09
+$E5D0 BEQ $E5D9;  jump around check if writing data to disk
+$E5D2 LDX #$26; error #
+$E5D4 CMP ($02),Y;  compare recorded header byte to what it should be
+$E5D6 JSR XferFailOnNEQ
+$E5D9 INY;  advance pointer position
+$E5DA CPY #$0e; loop is finished if 14 bytes have been checked
+$E5DC BNE $E5C9
+
+;set up next block for reading
+$E5DE LDX $09
+$E5E0 BEQ $E616;  branch if writing instead
+$E5E2 JSR EndOfBlkRead
+$E5E5 JSR LoadSiz&Src; sets up Ptr($0A) & Ptr($0C)
+$E5E8 LDA #$04
+$E5EA JSR CheckBlkType
+
+;check source type and read/verify status
+$E5ED LDY #$10
+$E5EF LDA ($02),Y;  check data source type bit
+$E5F1 BNE $E624;  branch if NOT in CPU memory map (PPU instead)
+$E5F3 LDY #$00
+$E5F5 LDX $09;  check if reading or writing
+$E5F7 BEQ $E60A;  branch if writing
+
+;check data on disk
+$E5F9 JSR XferByte
+$E5FC LDX #$26
+$E5FE CMP ($0A),Y
+$E600 JSR XferFailOnNEQ
+$E603 JSR inc0Adec0C
+$E606 BCS $E5F9
+$E608 BCC $E638
+
+;write data to disk
+$E60A LDA ($0A),Y
+$E60C JSR XferByte
+$E60F JSR inc0Adec0C
+$E612 BCS $E60A
+$E614 BCC $E638
+
+;set up next block for writing
+$E616 JSR EndOfBlkWrite
+$E619 JSR LoadSiz&Src; sets up Ptr($0A) & Ptr($0C)
+$E61C LDA #$04
+$E61E JSR WriteBlkType
+$E621 JMP $E5ED
+
+;verify data on disk with VRAM
+$E624 LDX $09
+$E626 BEQ $E640
+$E628 JSR XferByte
+$E62B LDX #$26; error #
+$E62D CMP $2007
+$E630 JSR XferFailOnNEQ
+$E633 JSR DecPtr0C
+$E636 BCS $E624
+
+;end block reading
+$E638 LDX $09
+$E63A BEQ $E649;  branch if writing instead
+$E63C JSR EndOfBlkRead
+$E63F RTS
+
+;write data from VRAM to disk
+$E640 LDA $2007;  [NES] VRAM data
+$E643 JSR XferByte
+$E646 JMP $E633
+
+;end block writing
+$E649 JSR EndOfBlkWrite
+$E64C RTS
+
+
+;############################################################################
+;############################################################################
+;############################################################################
+;waits until drive is ready (i.e., the disk head is at the start of the 
+disk)
+WaitForRdy: JSR StopMotor
+$E650 LDY #$00
+$E652 JSR MilSecTimer;0.256 sec delay
+$E655 JSR MilSecTimer;0.256 sec delay
+$E658 JSR StartMotor
+$E65B LDY #$96
+$E65D JSR MilSecTimer;0.150 sec delay
+$E660 LDA $F9
+$E662 ORA #$80; enable battery checking
+$E664 STA $F9
+$E666 STA $4026
+$E669 LDX #$02; battery error
+$E66B EOR $4033
+$E66E ROL A
+$E66F JSR XferFailOnCy
+$E672 JSR StopMotor
+$E675 JSR StartMotor
+$E678 LDX #$01; disk set error
+$E67A LDA $4032
+$E67D LSR A;  check disk set bit
+$E67E JSR XferFailOnCy
+$E681 LSR A;  check ready bit
+$E682 BCS $E678;  wait for drive to become ready
+$E684 RTS
+
+;stop disk drive motor
+StopMotor:  LDA $FA
+$E687 AND #$08
+$E689 ORA #$26
+$E68B STA $4025
+$E68E RTS
+
+;verifies that first byte in file is equal to value in accumulator
+CheckBlkType: LDY #$05
+$E691 JSR MilSecTimer;0.005 sec delay
+$E694 STA $07
+$E696 CLC
+$E697 ADC #$21; error # = 21h + failed block type (1..4)
+$E699 TAY
+$E69A LDA $FA
+$E69C ORA #$40
+$E69E STA $FA
+$E6A0 STA $4025
+$E6A3 JSR Xfer1stByte
+$E6A6 PHA
+$E6A7 TYA
+$E6A8 TAX
+$E6A9 PLA
+$E6AA CMP $07
+$E6AC JSR XferFailOnNEQ
+$E6AF RTS
+
+;writes out block start mark, plus byte in accumulator
+WriteBlkType: LDY #$0a
+$E6B2 STA $07
+$E6B4 LDA $FA
+$E6B6 AND #$2b; set transfer direction to write
+$E6B8 STA $4025
+$E6BB JSR MilSecTimer;0.010 sec delay
+$E6BE LDY #$00
+$E6C0 STY $4024;  zero out write register
+$E6C3 ORA #$40; tell FDS to write data to disk NOW
+$E6C5 STA $FA
+$E6C7 STA $4025
+$E6CA LDA #$80
+$E6CC JSR Xfer1stByte; write out block start mark
+$E6CF LDA $07
+$E6D1 JSR XferByte; write out block type
+$E6D4 RTS
+
+;FDS string
+FDSstr  DB  '*CVH-ODNETNIN*'
+
+;starts transfer
+StartXfer:  JSR WaitForRdy
+$E6E6 LDY #$c5
+$E6E8 JSR MilSecTimer;0.197 sec delay
+$E6EB LDY #$46
+$E6ED JSR MilSecTimer;0.070 sec delay
+$E6F0 LDA #$01
+$E6F2 JSR CheckBlkType
+$E6F5 LDY #$0d
+$E6F7 JSR XferByte
+$E6FA LDX #$21; error 21h if FDS string failed comparison
+$E6FC CMP FDSstr,Y
+$E6FF JSR XferFailOnNEQ
+$E702 DEY
+$E703 BPL $E6F7
+$E705 RTS
+
+;checks the CRC OK bit at the end of a block
+EndOfBlkRead: JSR XferByte; first CRC byte
+$E709 LDX #$28; premature file end error #
+$E70B LDA $4030
+$E70E AND #$40; check "end of disk" status
+$E710 BNE XferFail
+$E712 LDA $FA
+$E714 ORA #$10; set while processing block end mark (CRC)
+$E716 STA $FA
+$E718 STA $4025
+$E71B JSR XferByte; second CRC byte
+$E71E LDX #$27; CRC fail error #
+$E720 LDA $4030
+$E723 AND #$10; test CRC bit
+$E725 BNE XferFail
+$E727 BEQ ChkDiskSet
+
+;takes care of writing CRC value out to block being written
+EndOfBlkWrite:  JSR XferByte
+$E72C LDX #$29
+$E72E LDA $4030
+$E731 AND #$40
+$E733 BNE XferFail
+$E735 LDA $FA
+$E737 ORA #$10; causes FDS to write out CRC immediately
+$E739 STA $FA;  following completion of pending byte write
+$E73B STA $4025
+$E73E LDX #$b2; 0.0005 second delay (to allow adaptor pleanty
+$E740 DEX;  of time to write out entire CRC)
+$E741 BNE $E740
+$E743 LDX #$30
+$E745 LDA $4032
+$E748 AND #$02
+$E74A BNE XferFail
+
+;disables disk transfer interrupts & checks disk set status
+ChkDiskSet: LDA $FA
+$E74E AND #$2f
+$E750 ORA #$04
+$E752 STA $FA
+$E754 STA $4025
+$E757 LDX #$01; disk set error #
+$E759 LDA $4032
+$E75C LSR A
+$E75D JSR XferFailOnCy
+$E760 RTS
+
+;reads in CRC value at end of block into Ptr($0A)+Y. Note that this
+;subroutine is not used by any other disk routines.
+ReadCRC:  JSR XferByte
+$E764 STA ($0A),Y
+$E766 LDX #$28
+$E768 LDA $4030
+$E76B AND #$40
+$E76D BNE XferFail
+$E76F INY
+$E770 JSR XferByte
+$E773 STA ($0A),Y
+$E775 JMP ChkDiskSet
+
+;dispatched when transfer is to be terminated. returns error # in A.
+XferDone: LDX #$00; no error
+$E77A BEQ $E786
+XferFailOnCy: BCS XferFail
+$E77E RTS
+XferFailOnNEQ:  BEQ $E77E
+XferFail: TXA
+$E782 LDX $04
+$E784 TXS;  restore PC to original caller's address
+$E785 TAX
+$E786 LDA $FA
+$E788 AND #$09
+$E78A ORA #$26
+$E78C STA $FA
+$E78E STA $4025
+$E791 TXA
+$E792 CLI
+$E793 RTS
+
+;the main interface for data exchanges between the disk drive & the system.
+Xfer1stByte:  LDX #$40
+$E796 STX $0101
+$E799 ROL $FA
+$E79B SEC
+$E79C ROR $FA
+$E79E LDX $FA
+$E7A0 STX $4025
+XferByte: CLI
+$E7A4 JMP $E7A4
+
+;routine for incrementing 16-bit pointers in the zero-page
+inc0Adec0C: INC $0A
+$E7A9 BNE DecPtr0C
+$E7AB INC $0B
+DecPtr0C: SEC
+$E7AE LDA $0C
+$E7B0 SBC #$01
+$E7B2 STA $0C
+$E7B4 LDA $0D
+$E7B6 SBC #$00
+$E7B8 STA $0D
+$E7BA RTS
+
+
+;############################################################################
+;PPU data processor##########################################################
+;############################################################################
+;this routine treats a string of bytes as custom instructions. These strings
+;are stored in a manner similar to regular CPU instructions, in that the
+;instructions are stored & processed sequentially, and instruction length is
+;dynamic. The instructions have been designed to allow easy filling/copying
+;of data to random places in the PPU memory map. Full random access to PPU
+;memory is supported, and it is even possible to call subroutines. All data
+;written to PPU memory is stored in the actual instructions (up to 64
+;sequential bytes of data can be stored in 1 instruction).
+
+;the 16-bit immediate which follows the 'JSR PPUdataPrsr' opcode is a 
+pointer
+;to the first PPU data string to be processed.
+
+;the PPU data processor's opcodes are laid out as follows.
+
+
+;+---------------+
+;|special opcodes|
+;+---------------+
+; $4C:  call subroutine. 16-bit call address follows. This opcode is
+; the equivalent of a 'JMP $xxxx' 6502 mnemonic.
+
+; $60:  end subroutine. returns to the instruction after the call.
+; This opcode is the equivalent of a 'RTS' 6502 mnemonic.
+
+; $80..$FF: end program. processing will not stop until this opcode is
+; encountered.
+
+
+;+---------------------------------+
+;|move/fill data instruction format|
+;+---------------------------------+
+
+; byte 0
+; ------
+;  high byte of destination PPU address. cannot be equal to $60, $4C or
+;  greater than $7F.
+
+; byte 1
+; ------
+;  low byte of destination PPU address.
+
+; byte 2 bit description
+; ----------------------
+;  7:  increment PPU address by 1/32 (0/1)
+;  6:  copy/fill data to PPU memory (0/1)
+;  5-0:  byte transfer count (0 indicates 64 bytes)
+
+; bytes 3..n
+; ----------
+;  - if the fill bit is set, there is only one byte here, which is the value
+;  to fill the PPU memory with, for the specified byte transfer count.
+;  - if copy mode is set instead, this data contains the bytes to be copied
+;  to PPU memory. The number of bytes appearing here is equal to the byte
+;  transfer count.
+
+
+;entry point
+PPUdataPrsr:  JSR GetHCparam
+$E7BE JMP $E815
+
+;[Param] is in A
+$E7C1 PHA;  save [Param]
+$E7C2 STA $2006;  [NES] VRAM address select
+$E7C5 INY
+$E7C6 LDA ($00),Y;  load [Param+1]
+$E7C8 STA $2006;  [NES] VRAM address select
+$E7CB INY
+$E7CC LDA ($00),Y;  load [Param+2]  IFcccccc
+$E7CE ASL A;  bit 7 in carry  Fcccccc0
+$E7CF PHA;  save [Param+2]
+
+;if Bit(7,[Param+2]) then PPUinc:=32 else PPUinc:=1
+$E7D0 LDA $FF
+$E7D2 ORA #$04
+$E7D4 BCS $E7D8
+$E7D6 AND #$fb
+$E7D8 STA $2000;  [NES] PPU setup #1
+$E7DB STA $FF
+
+;if Bit(6,[Param+2]) then
+$E7DD PLA;  load [Param+2]  Fcccccc0
+$E7DE ASL A
+$E7DF PHP;  save zero status
+$E7E0 BCC $E7E5
+$E7E2 ORA #$02
+$E7E4 INY;  advance to next byte if fill bit set
+
+;if Zero([Param+2] and $3F) then carry:=1 else carry:=0
+$E7E5 PLP
+$E7E6 CLC
+$E7E7 BNE $E7EA
+$E7E9 SEC
+$E7EA ROR A
+$E7EB LSR A
+$E7EC TAX
+
+;for I:=0 to X-1 do [$2007]:=[Param+3+(X and not Bit(6,[Param+2]))]
+$E7ED BCS $E7F0
+$E7EF INY
+$E7F0 LDA ($00),Y
+$E7F2 STA $2007;  [NES] VRAM data
+$E7F5 DEX
+$E7F6 BNE $E7ED
+
+;not sure what this is supposed to do, since it looks like it's zeroing out
+;the entire PPU address register in the end
+$E7F8 PLA;  load [Param]
+$E7F9 CMP #$3f
+$E7FB BNE $E809
+$E7FD STA $2006;  [NES] VRAM address select
+$E800 STX $2006;  [NES] VRAM address select
+$E803 STX $2006;  [NES] VRAM address select
+$E806 STX $2006;  [NES] VRAM address select
+
+;increment Param by Y+1
+$E809 SEC
+$E80A TYA
+$E80B ADC $00
+$E80D STA $00
+$E80F LDA #$00
+$E811 ADC $01
+$E813 STA $01
+
+;exit if bit(7,[Param]) is 1
+$E815 LDX $2002;  [NES] PPU status
+$E818 LDY #$00
+$E81A LDA ($00),Y;  load opcode
+$E81C BPL $E81F
+$E81E RTS
+
+;test for RET instruction
+$E81F CMP #$60
+$E821 BNE $E82D
+
+;[Param] = $60:
+;pop Param off stack
+$E823 PLA
+$E824 STA $01
+$E826 PLA
+$E827 STA $00
+$E829 LDY #$02; increment amount
+$E82B BNE $E809;  unconditional
+
+;test for JSR opcode
+$E82D CMP #$4c
+$E82F BNE $E7C1
+
+;[Param] = $4C
+;push Param onto stack
+$E831 LDA $00
+$E833 PHA
+$E834 LDA $01
+$E836 PHA
+
+;Param = [Param+1]
+$E837 INY
+$E838 LDA ($00),Y
+$E83A TAX
+$E83B INY
+$E83C LDA ($00),Y
+$E83E STA $01
+$E840 STX $00
+$E842 BCS $E815;  unconditional
+
+
+;############################################################################
+;############################################################################
+;############################################################################
+;fetches hardcoded 16-bit value after second return address into [$00] & 
+[$01]
+;that return address is then incremented by 2.
+GetHCparam: TSX
+$E845 LDA $0103,X
+$E848 STA $05
+$E84A LDA $0104,X
+$E84D STA $06
+$E84F LDY #$01
+$E851 LDA ($05),Y
+$E853 STA $00
+$E855 INY
+$E856 LDA ($05),Y
+$E858 STA $01
+$E85A CLC
+$E85B LDA #$02
+$E85D ADC $05
+$E85F STA $0103,X
+$E862 LDA #$00
+$E864 ADC $06
+$E866 STA $0104,X
+$E869 RTS
+
+
+$E86A LDA $FF
+$E86C AND #$fb
+$E86E STA $2000;  [NES] PPU setup #1
+$E871 STA $FF
+$E873 LDX $2002;  [NES] PPU status
+$E876 LDY #$00
+$E878 BEQ $E8A5
+$E87A PHA
+$E87B STA $2006;  [NES] VRAM address select
+$E87E INY
+$E87F LDA $0302,Y
+$E882 STA $2006;  [NES] VRAM address select
+$E885 INY
+$E886 LDX $0302,Y
+$E889 INY
+$E88A LDA $0302,Y
+$E88D STA $2007;  [NES] VRAM data
+$E890 DEX
+$E891 BNE $E889
+$E893 PLA
+$E894 CMP #$3f
+$E896 BNE $E8A4
+$E898 STA $2006;  [NES] VRAM address select
+$E89B STX $2006;  [NES] VRAM address select
+$E89E STX $2006;  [NES] VRAM address select
+$E8A1 STX $2006;  [NES] VRAM address select
+$E8A4 INY
+$E8A5 LDA $0302,Y
+$E8A8 BPL $E87A
+$E8AA STA $0302
+$E8AD LDA #$00
+$E8AF STA $0301
+$E8B2 RTS
+
+
+$E8B3 LDA $2002;  [NES] PPU status
+$E8B6 LDA $0300,X
+$E8B9 STA $2006;  [NES] VRAM address select
+$E8BC INX
+$E8BD LDA $0300,X
+$E8C0 STA $2006;  [NES] VRAM address select
+$E8C3 INX
+$E8C4 LDA $2007;  [NES] VRAM data
+$E8C7 LDA $2007;  [NES] VRAM data
+$E8CA STA $0300,X
+$E8CD INX
+$E8CE DEY
+$E8CF BNE $E8B6
+$E8D1 RTS
+
+
+$E8D2 STA $03
+$E8D4 STX $02
+$E8D6 STY $04
+$E8D8 JSR GetHCparam
+$E8DB LDY #$ff
+$E8DD LDA #$01
+$E8DF BNE $E8F6
+$E8E1 STA $03
+$E8E3 STX $02
+$E8E5 JSR GetHCparam
+$E8E8 LDY #$00
+$E8EA LDA ($00),Y
+$E8EC AND #$0f
+$E8EE STA $04
+$E8F0 LDA ($00),Y
+$E8F2 LSR A
+$E8F3 LSR A
+$E8F4 LSR A
+$E8F5 LSR A
+$E8F6 STA $05
+$E8F8 LDX $0301
+$E8FB LDA $03
+$E8FD STA $0302,X
+$E900 JSR $E93C
+$E903 LDA $02
+$E905 STA $0302,X
+$E908 JSR $E93C
+$E90B LDA $04
+$E90D STA $06
+$E90F STA $0302,X
+$E912 JSR $E93C
+$E915 INY
+$E916 LDA ($00),Y
+$E918 STA $0302,X
+$E91B DEC $06
+$E91D BNE $E912
+$E91F JSR $E93C
+$E922 STX $0301
+$E925 CLC
+$E926 LDA #$20
+$E928 ADC $02
+$E92A STA $02
+$E92C LDA #$00
+$E92E ADC $03
+$E930 STA $03
+$E932 DEC $05
+$E934 BNE $E8FB
+$E936 LDA #$ff
+$E938 STA $0302,X
+$E93B RTS
+
+
+$E93C INX
+$E93D CPX $0300
+$E940 BCC $E94E
+$E942 LDX $0301
+$E945 LDA #$ff
+$E947 STA $0302,X
+$E94A PLA
+$E94B PLA
+$E94C LDA #$01
+$E94E RTS
+
+
+$E94F DEX
+$E950 DEX
+$E951 DEX
+$E952 TXA
+$E953 CLC
+$E954 ADC #$03
+$E956 DEY
+$E957 BNE $E953
+$E959 TAX
+$E95A TAY
+$E95B LDA $0300,X
+$E95E CMP $00
+$E960 BNE $E970
+$E962 INX
+$E963 LDA $0300,X
+$E966 CMP $01
+$E968 BNE $E970
+$E96A INX
+$E96B LDA $0300,X
+$E96E CLC
+$E96F RTS
+
+
+$E970 LDA $00
+$E972 STA $0300,Y
+$E975 INY
+$E976 LDA $01
+$E978 STA $0300,Y
+$E97B SEC
+$E97C RTS
+
+
+$E97D LDA #$08
+$E97F STA $00
+$E981 LDA $02
+$E983 ASL A
+$E984 ROL $00
+$E986 ASL A
+$E987 ROL $00
+$E989 AND #$e0
+$E98B STA $01
+$E98D LDA $03
+$E98F LSR A
+$E990 LSR A
+$E991 LSR A
+$E992 ORA $01
+$E994 STA $01
+$E996 RTS
+
+
+$E997 LDA $01
+$E999 ASL A
+$E99A ASL A
+$E99B ASL A
+$E99C STA $03
+$E99E LDA $01
+$E9A0 STA $02
+$E9A2 LDA $00
+$E9A4 LSR A
+$E9A5 ROR $02
+$E9A7 LSR A
+$E9A8 ROR $02
+$E9AA LDA #$f8
+$E9AC AND $02
+$E9AE STA $02
+$E9B0 RTS
+
+
+;############################################################################
+;Random number generator#####################################################
+;############################################################################
+;uses a shift register and a XOR to generate pseudo-random numbers.
+
+;algorithm
+;---------
+;carry  [X]       [X+1]     [X+n]
+;-->    --->      --->      --->      --->    --->  --->
+;C      765432*0  765432*0  76543210  ...
+
+;notes
+;-----
+;* these 2 points are XORed, and the result is stored in C.
+
+;- when the shift occurs, C is shifted into the MSB of [X], the LSB of [X] 
+is
+;  shifted into the MSB of [X+1], and so on, for as many more numbers there
+;  are (# of bytes to use is indicated by Y).
+
+;- at least 2 8-bit shift registers need to be used here, but using more 
+will
+;  not effect the random number generation. Also, after 16 shifts, the
+;  16-bit results in the first 2 bytes will be the same as the next 2, so
+;  it's really not necessary to use more than 2 bytes for this algorithm.
+
+;- a new random number is available after each successive call to this
+;  subroutine, but to get a good random number to start off with, it may be
+;  necessary to call this routine several times.
+
+;- upon the first time calling this routine, make sure the first 2 bytes
+;  do not both contain 0, otherwise the random number algorithm won't work.
+
+
+;Y is number of 8-bit registers to use (usually 2)
+;X is base 0pg address for shifting
+
+
+;store first bit sample
+RndmNbrGen: LDA $00,X
+$E9B3 AND #$02
+$E9B5 STA $00
+
+;xor second bit sample with first
+$E9B7 LDA $01,X
+$E9B9 AND #$02
+$E9BB EOR $00
+
+;set carry to result of XOR
+$E9BD CLC
+$E9BE BEQ $E9C1
+$E9C0 SEC
+
+;multi-precision shift for Y amount of bytes
+$E9C1 ROR $00,X
+$E9C3 INX
+$E9C4 DEY
+$E9C5 BNE $E9C1
+$E9C7 RTS
+
+
+;############################################################################
+;############################################################################
+;############################################################################
+
+$E9C8 LDA #$00
+$E9CA STA $2003;  [NES] SPR-RAM address select
+$E9CD LDA #$02
+$E9CF STA $4014;  [NES] Sprite DMA trigger
+$E9D2 RTS
+
+
+$E9D3 STX $00
+$E9D5 DEC $00,X
+$E9D7 BPL $E9DE
+$E9D9 LDA #$09
+$E9DB STA $00,X
+$E9DD TYA
+$E9DE TAX
+$E9DF LDA $00,X
+$E9E1 BEQ $E9E5
+$E9E3 DEC $00,X
+$E9E5 DEX
+$E9E6 CPX $00
+$E9E8 BNE $E9DF
+$E9EA RTS
+
+
+;############################################################################
+;controller read function
+
+;- strobes controllers
+;- [$F5] contains 8 reads of bit 0 from [$4016]
+;- [$00] contains 8 reads of bit 1 from [$4016]
+;- [$F6] contains 8 reads of bit 0 from [$4017]
+;- [$01] contains 8 reads of bit 1 from [$4017]
+
+ReadCtrlrs: LDX $FB
+$E9ED INX
+$E9EE STX $4016;  [NES] Joypad & I/O port for port #1
+$E9F1 DEX
+$E9F2 STX $4016;  [NES] Joypad & I/O port for port #1
+$E9F5 LDX #$08
+$E9F7 LDA $4016;  [NES] Joypad & I/O port for port #1
+$E9FA LSR A
+$E9FB ROL $F5
+$E9FD LSR A
+$E9FE ROL $00
+$EA00 LDA $4017;  [NES] Joypad & I/O port for port #2
+$EA03 LSR A
+$EA04 ROL $F6
+$EA06 LSR A
+$EA07 ROL $01
+$EA09 DEX
+$EA0A BNE $E9F7
+$EA0C RTS
+
+
+;############################################################################
+;controller OR function
+
+;[$F5]|=[$00]
+;[$F6]|=[$01]
+
+ORctrlrRead:  LDA $00
+$EA0F ORA $F5
+$EA11 STA $F5
+$EA13 LDA $01
+$EA15 ORA $F6
+$EA17 STA $F6
+$EA19 RTS
+
+
+;############################################################################
+;get controller status
+
+;- returns status of controller buttons in [$F7] (CI) and [$F8] (CII)
+;- returns which new buttons have been pressed since last update in
+;  [$F5] (CI) and [$F6] (CII)
+
+GetCtrlrSts:  JSR ReadCtrlrs
+$EA1D BEQ $EA25;  always branches because ReadCtrlrs sets zero flag
+$EA1F JSR ReadCtrlrs; this instruction is not used
+$EA22 JSR ORctrlrRead; this instruction is not used
+$EA25 LDX #$01
+$EA27 LDA $F5,X
+$EA29 TAY
+$EA2A EOR $F7,X
+$EA2C AND $F5,X
+$EA2E STA $F5,X
+$EA30 STY $F7,X
+$EA32 DEX
+$EA33 BPL $EA27
+$EA35 RTS
+
+
+;############################################################################
+
+$EA36 JSR ReadCtrlrs
+$EA39 LDY $F5
+$EA3B LDA $F6
+$EA3D PHA
+$EA3E JSR ReadCtrlrs
+$EA41 PLA
+$EA42 CMP $F6
+$EA44 BNE $EA39
+$EA46 CPY $F5
+$EA48 BNE $EA39
+$EA4A BEQ $EA25
+$EA4C JSR ReadCtrlrs
+$EA4F JSR ORctrlrRead
+$EA52 LDY $F5
+$EA54 LDA $F6
+$EA56 PHA
+$EA57 JSR ReadCtrlrs
+$EA5A JSR ORctrlrRead
+$EA5D PLA
+$EA5E CMP $F6
+$EA60 BNE $EA52
+$EA62 CPY $F5
+$EA64 BNE $EA52
+$EA66 BEQ $EA25
+$EA68 JSR ReadCtrlrs
+$EA6B LDA $00
+$EA6D STA $F7
+$EA6F LDA $01
+$EA71 STA $F8
+$EA73 LDX #$03
+$EA75 LDA $F5,X
+$EA77 TAY
+$EA78 EOR $F1,X
+$EA7A AND $F5,X
+$EA7C STA $F5,X
+$EA7E STY $F1,X
+$EA80 DEX
+$EA81 BPL $EA75
+$EA83 RTS
+
+
+;############################################################################
+;VRAM fill routine###########################################################
+;############################################################################
+;this routine basically fills a specified place in VRAM with a desired 
+value.
+;when writing to name table memory, another value can be specified to fill 
+the
+;attribute table with. parameters are as follows:
+
+;A is HI VRAM address (LO VRAM address is always 0)
+
+;X is fill value
+
+;Y is iteration count (256 written bytes per iteration). if A is $20 or
+;  greater (indicating name table VRAM), iteration count is always 4,
+;  and this data is used for attribute fill data.
+
+VRAMfill: STA $00
+$EA86 STX $01
+$EA88 STY $02
+
+;reset 2006's flip flop
+$EA8A LDA $2002;  [NES] PPU status
+
+;set PPU address increment to 1
+$EA8D LDA $FF
+$EA8F AND #$fb
+$EA91 STA $2000;  [NES] PPU setup #1
+$EA94 STA $FF
+
+;PPUaddrHI:=[$00]
+;PPUaddrLO:=$00
+$EA96 LDA $00
+$EA98 STA $2006;  [NES] VRAM address select
+$EA9B LDY #$00
+$EA9D STY $2006;  [NES] VRAM address select
+
+;if PPUaddr<$2000 then X:=[$02] else X:=4
+$EAA0 LDX #$04
+$EAA2 CMP #$20
+$EAA4 BCS $EAA8;  branch if more than or equal to $20
+$EAA6 LDX $02
+
+;for i:=X downto 1 do Fill([$2007],A,256)
+$EAA8 LDY #$00
+$EAAA LDA $01
+$EAAC STA $2007;  [NES] VRAM data
+$EAAF DEY
+$EAB0 BNE $EAAC
+$EAB2 DEX
+$EAB3 BNE $EAAC
+
+;set up Y for next loop
+$EAB5 LDY $02
+
+;if PPUaddr>=$2000 then
+$EAB7 LDA $00
+$EAB9 CMP #$20
+$EABB BCC $EACF;  branch if less than $20
+
+;  PPUaddrHI:=[$00]+3
+;  PPUaddrLO:=$C0
+$EABD ADC #$02
+$EABF STA $2006;  [NES] VRAM address select
+$EAC2 LDA #$c0
+$EAC4 STA $2006;  [NES] VRAM address select
+
+;  for I:=1 to $40 do [$2007]:=[$02]
+$EAC7 LDX #$40
+$EAC9 STY $2007;  [NES] VRAM data
+$EACC DEX
+$EACD BNE $EAC9
+
+;restore X
+$EACF LDX $01
+$EAD1 RTS
+
+
+;############################################################################
+;CPU memory fill routine#####################################################
+;############################################################################
+;this routine simply fills CPU mapped memory with a given value. granularity
+;is pages (256 bytes). parameters are as follows:
+
+;A is fill value
+;X is first page #
+;Y is last  page #
+
+MemFill:  PHA
+$EAD3 TXA
+$EAD4 STY $01
+$EAD6 CLC
+$EAD7 SBC $01
+$EAD9 TAX
+$EADA PLA
+$EADB LDY #$00
+$EADD STY $00
+$EADF STA ($00),Y
+$EAE1 DEY
+$EAE2 BNE $EADF
+$EAE4 DEC $01
+$EAE6 INX
+$EAE7 BNE $EADF
+$EAE9 RTS
+
+
+;############################################################################
+;############################################################################
+;############################################################################
+;restore PPU reg's 0 & 5 from mem
+RstPPU05: LDA $2002;  reset scroll register flip-flop
+$EAED LDA $FD
+$EAEF STA $2005;  [NES] PPU scroll
+$EAF2 LDA $FC
+$EAF4 STA $2005;  [NES] PPU scroll
+$EAF7 LDA $FF
+$EAF9 STA $2000;  [NES] PPU setup #1
+$EAFC RTS
+
+
+;############################################################################
+
+$EAFD ASL A
+$EAFE TAY
+$EAFF INY
+$EB00 PLA
+$EB01 STA $00
+$EB03 PLA
+$EB04 STA $01
+$EB06 LDA ($00),Y
+$EB08 TAX
+$EB09 INY
+$EB0A LDA ($00),Y
+$EB0C STA $01
+$EB0E STX $00
+$EB10 JMP ($0000)
+
+
+$EB13 LDA $FB
+$EB15 AND #$f8
+$EB17 STA $FB
+$EB19 ORA #$05
+$EB1B STA $4016;  [NES] Joypad & I/O port for port #1
+$EB1E NOP
+$EB1F NOP
+$EB20 NOP
+$EB21 NOP
+$EB22 NOP
+$EB23 NOP
+$EB24 LDX #$08
+$EB26 LDA $FB
+$EB28 ORA #$04
+$EB2A STA $4016;  [NES] Joypad & I/O port for port #1
+$EB2D LDY #$0a
+$EB2F DEY
+$EB30 BNE $EB2F
+$EB32 NOP
+$EB33 LDY $FB
+$EB35 LDA $4017;  [NES] Joypad & I/O port for port #2
+$EB38 LSR A
+$EB39 AND #$0f
+$EB3B BEQ $EB62
+$EB3D STA $00,X
+$EB3F LDA $FB
+$EB41 ORA #$06
+$EB43 STA $4016;  [NES] Joypad & I/O port for port #1
+$EB46 LDY #$0a
+$EB48 DEY
+$EB49 BNE $EB48
+$EB4B NOP
+$EB4C NOP
+$EB4D LDA $4017;  [NES] Joypad & I/O port for port #2
+$EB50 ROL A
+$EB51 ROL A
+$EB52 ROL A
+$EB53 AND #$f0
+$EB55 ORA $00,X
+$EB57 EOR #$ff
+$EB59 STA $00,X
+$EB5B DEX
+$EB5C BPL $EB26
+$EB5E LDY $FB
+$EB60 ORA #$ff
+$EB62 STY $4016;  [NES] Joypad & I/O port for port #1
+$EB65 RTS
+
+
+;############################################################################
+;CPU to PPU copy routine#####################################################
+;############################################################################
+;CPUtoPPUcpy is used for making data transfers between the PPU & CPU.
+;arguments are passed in CPU registers, and also hardcoded as an immediate
+;value after the call instruction.
+
+;parameters
+;----------
+
+;[RETaddr+1] is CPU transfer address (the 2 bytes immediately after the JSR 
+inst.)
+
+;X reg: # of 16-byte units to transfer to/from PPU
+
+;Y reg: bits 8-15 of PPU transfer address
+
+;A reg: bottom part of PPU transfer address, and transfer control. the bit layout
+; is as follows:
+
+;  0: invert data/fill type
+
+;  1: transfer direction (0 = write to video mem)
+
+;  2-3: transfer mode. note that on each iteration, 2 groups of 8 bytes
+; are always transferred in/out of the PPU, but depending on the
+; mode, 8 or 16 bytes will be transferred to/from CPU. The following
+; chart describes how transfers to/from the PPU via the CPU are
+; made.
+
+; 1st 8 bytes 2nd 8 bytes
+; ----------- -----------
+;     0:  CPU CPU+8
+;     1:  CPU fill bit
+;     2:  fill bit  CPU
+;     3:  CPU ^ inv.bit CPU
+
+
+;  4-7: bits 4-7 of PPU transfer address bits 0-3 are assumed 0.
+
+
+;increment word at [$00] by 8.
+;decrement byte at [$02].
+Inc00by8: LDA #$08
+Inc00byA: PHP
+$EB69 LDY #$00
+$EB6B CLC
+$EB6C ADC $00
+$EB6E STA $00
+$EB70 LDA #$00
+$EB72 ADC $01
+$EB74 STA $01
+$EB76 PLP
+$EB77 DEC $02
+$EB79 RTS
+
+;move 8 bytes pointed to by word[$00] to video buf.
+;move direction is reversed if carry is set.
+Mov8BVid: LDX #$08
+$EB7C BCS $EB88
+$EB7E LDA ($00),Y
+$EB80 STA $2007;  [NES] VRAM data
+$EB83 INY
+$EB84 DEX
+$EB85 BNE $EB7C
+$EB87 RTS
+$EB88 LDA $2007;  [NES] VRAM data
+$EB8B STA ($00),Y
+$EB8D BCS $EB83
+
+;move the byte at [$03] to the video buffer 8 times.
+;if carry is set, then make dummy reads.
+FillVidW8B: LDA $03
+$EB91 LDX #$08
+$EB93 BCS $EB9C
+$EB95 STA $2007;  [NES] VRAM data
+$EB98 DEX
+$EB99 BNE $EB93
+$EB9B RTS
+$EB9C LDA $2007;  [NES] VRAM data
+$EB9F BCS $EB98
+
+;move 8 bytes pointed to by word[$00] to video buf.
+;data is XORed with [$03] before being moved.
+Mov8BtoVid: LDX #$08
+$EBA3 LDA $03
+$EBA5 EOR ($00),Y
+$EBA7 STA $2007;  [NES] VRAM data
+$EBAA INY
+$EBAB DEX
+$EBAC BNE $EBA3
+$EBAE RTS
+
+;load register variables into temporary memory
+CPUtoPPUcpy:  STA $04
+$EBB1 STX $02
+$EBB3 STY $03
+$EBB5 JSR GetHCparam; load hard-coded param into [$00]&[$01]
+
+;set PPU address increment to 1
+$EBB8 LDA $2002;  [NES] PPU status
+$EBBB LDA $FF
+$EBBD AND #$fb
+$EBBF STA $FF
+$EBC1 STA $2000;  [NES] PPU setup #1
+
+;PPUaddrHI:=[$03]
+;PPUaddrLO:=[$04]and $F0
+$EBC4 LDY $03
+$EBC6 STY $2006;  [NES] VRAM address select
+$EBC9 LDA $04
+$EBCB AND #$f0
+$EBCD STA $2006;  [NES] VRAM address select
+
+;[$03]:=Bit(0,[$04])   0 if clear; -1 if set
+$EBD0 LDA #$00
+$EBD2 STA $03
+$EBD4 LDA $04
+$EBD6 AND #$0f
+$EBD8 LSR A
+$EBD9 BCC $EBDD
+$EBDB DEC $03
+
+;if Bit(1,[$04])then Temp:=[$2007]
+$EBDD LSR A
+$EBDE BCC $EBE3
+$EBE0 LDX $2007;  dummy read to validate internal read buffer
+
+;case [$04]and $0C of
+$EBE3 TAY
+$EBE4 BEQ $EBFB;  00xx
+$EBE6 DEY
+$EBE7 BEQ $EC09;  01xx
+$EBE9 DEY
+$EBEA BEQ $EC15;  02xx
+$EBEC DEY;  Y=0
+
+;$0C: #2 plane copy (plane 1 is filled with same data, but can be inverted)
+$EBED JSR Mov8BtoVid
+$EBF0 LDY #$00
+$EBF2 JSR Mov8BVid
+$EBF5 JSR Inc00by8
+$EBF8 BNE $EBED
+$EBFA RTS
+
+;$00: double plane copy
+$EBFB JSR Mov8BVid
+$EBFE JSR Mov8BVid
+$EC01 LDA #$10
+$EC03 JSR Inc00byA
+$EC06 BNE $EBFB
+$EC08 RTS
+
+;$04: #1 plane copy (plane 2 is filled with [$03])
+$EC09 JSR Mov8BVid
+$EC0C JSR FillVidW8B
+$EC0F JSR Inc00by8
+$EC12 BNE $EC09
+$EC14 RTS
+
+;$08: #2 plane copy (plane 1 is filled with [$03])
+$EC15 JSR FillVidW8B
+$EC18 JSR Mov8BVid
+$EC1B JSR Inc00by8
+$EC1E BNE $EC15
+$EC20 RTS
+
+;############################################################################
+;############################################################################
+;############################################################################
+
+$EC21 RTS
+
+$EC22 LDY #$0b
+$EC24 LDA ($00),Y
+$EC26 STA $02
+$EC28 LDA #$02
+$EC2A STA $03
+$EC2C DEY
+$EC2D LDA ($00),Y
+$EC2F LSR A
+$EC30 LSR A
+$EC31 LSR A
+$EC32 LSR A
+$EC33 BEQ $EC21
+$EC35 STA $04
+$EC37 STA $0C
+$EC39 LDA ($00),Y
+$EC3B AND #$0f
+$EC3D BEQ $EC21
+$EC3F STA $05
+$EC41 LDY #$01
+$EC43 LDA ($00),Y
+$EC45 TAX
+$EC46 DEY
+$EC47 LDA ($00),Y
+$EC49 BEQ $EC4F
+$EC4B BPL $EC21
+$EC4D LDX #$f4
+$EC4F STX $08
+$EC51 LDY #$08
+$EC53 LDA ($00),Y
+$EC55 LSR A
+$EC56 AND #$08
+$EC58 BEQ $EC5C
+$EC5A LDA #$80
+$EC5C ROR A
+$EC5D STA $09
+$EC5F INY
+$EC60 LDA ($00),Y
+$EC62 AND #$23
+$EC64 ORA $09
+$EC66 STA $09
+$EC68 LDY #$03
+$EC6A LDA ($00),Y
+$EC6C STA $0A
+$EC6E LDA $05
+$EC70 STA $07
+$EC72 LDY #$00
+$EC74 STY $0B
+$EC76 LDA $04
+$EC78 STA $06
+$EC7A LDX $08
+$EC7C TXA
+$EC7D STA ($02),Y
+$EC7F CMP #$f4
+$EC81 BEQ $EC87
+$EC83 CLC
+$EC84 ADC #$08
+$EC86 TAX
+$EC87 INY
+$EC88 INY
+$EC89 LDA $09
+$EC8B STA ($02),Y
+$EC8D INY
+$EC8E LDA $0A
+$EC90 STA ($02),Y
+$EC92 INY
+$EC93 INC $0B
+$EC95 DEC $06
+$EC97 BNE $EC7C
+$EC99 LDA $0A
+$EC9B CLC
+$EC9C ADC #$08
+$EC9E STA $0A
+$ECA0 DEC $07
+$ECA2 BNE $EC76
+$ECA4 LDY #$07
+$ECA6 LDA ($00),Y
+$ECA8 STA $07
+$ECAA DEY
+$ECAB LDA ($00),Y
+$ECAD STA $08
+$ECAF LDA #$00
+$ECB1 STA $0A
+$ECB3 CLC
+$ECB4 LDX $0B
+$ECB6 DEY
+$ECB7 LDA ($00),Y
+$ECB9 CLC
+$ECBA ADC $07
+$ECBC STA $07
+$ECBE LDA #$00
+$ECC0 ADC $08
+$ECC2 STA $08
+$ECC4 DEX
+$ECC5 BNE $ECB7
+$ECC7 INC $02
+$ECC9 LDY #$00
+$ECCB LDA $08
+$ECCD BNE $ECD3
+$ECCF DEC $0A
+$ECD1 LDY $07
+$ECD3 BIT $09
+$ECD5 BMI $ECF5
+$ECD7 BVS $ECF7
+$ECD9 LDA ($07),Y
+$ECDB BIT $0A
+$ECDD BPL $ECE0
+$ECDF TYA
+$ECE0 STA ($02,X)
+$ECE2 DEY
+$ECE3 BIT $09
+$ECE5 BMI $ECE9
+$ECE7 INY
+$ECE8 INY
+$ECE9 LDA #$04
+$ECEB CLC
+$ECEC ADC $02
+$ECEE STA $02
+$ECF0 DEC $0B
+$ECF2 BNE $ECD9
+$ECF4 RTS
+
+
+$ECF5 BVC $ED09
+$ECF7 TYA
+$ECF8 CLC
+$ECF9 ADC $0B
+$ECFB TAY
+$ECFC DEY
+$ECFD BIT $09
+$ECFF BMI $ECD9
+$ED01 LDA #$ff
+$ED03 EOR $0C
+$ED05 STA $0C
+$ED07 INC $0C
+$ED09 TYA
+$ED0A CLC
+$ED0B ADC $0C
+$ED0D TAY
+$ED0E LDA $04
+$ED10 STA $06
+$ED12 DEY
+$ED13 BIT $09
+$ED15 BMI $ED19
+$ED17 INY
+$ED18 INY
+$ED19 LDA ($07),Y
+$ED1B BIT $0A
+$ED1D BPL $ED20
+$ED1F TYA
+$ED20 STA ($02,X)
+$ED22 LDA #$04
+$ED24 CLC
+$ED25 ADC $02
+$ED27 STA $02
+$ED29 DEC $06
+$ED2B BNE $ED12
+$ED2D TYA
+$ED2E CLC
+$ED2F ADC $0C
+$ED31 TAY
+$ED32 DEC $05
+$ED34 BNE $ED09
+$ED36 RTS
+
+
+24242424242424242424241712171D0E
+170D1824282424242424242424242424
+242424242424240F0A16121522240C18
+16191E1D0E1B241D1624242424242424
+24242424242424242424242424242424
+24242424242424242424242424242424
+24241D11121C24191B180D1E0C1D2412
+1C24160A171E0F0A0C1D1E1B0E0D2424
+24240A170D241C18150D240B22241712
+171D0E170D18240C1827151D0D262424
+2424181B240B2224181D110E1B240C18
+16190A1722241E170D0E1B2424242424
+242415120C0E171C0E24180F24171217
+1D0E170D18240C1827151D0D26262424
+
+;a disk-related subroutine, which somehow ended up all the way out here...
+StartMotor: ORA #$01
+$EE19 STA $4025
+$EE1C AND #$fd
+$EE1E STA $FA
+$EE20 STA $4025
+$EE23 RTS
+
+
+;############################################################################
+;Reset vector################################################################
+;############################################################################
+;disable interrupts (just in case resetting the CPU doesn't!)
+Reset:  SEI
+
+;set up PPU ctrl reg #1
+$EE25 LDA #$10
+$EE27 STA $2000;  [NES] PPU setup #1
+$EE2A STA $FF
+
+;clear decimal flag (in case this code is executed on a CPU with dec. mode)
+$EE2C CLD
+
+;set up PPU ctrl reg #2 (disable playfield & objects)
+$EE2D LDA #$06
+$EE2F STA $FE
+$EE31 STA $2001;  [NES] PPU setup #2
+
+;wait at least 1 frame
+$EE34 LDX #$02; loop count = 2 iterations
+$EE36 LDA $2002;  [NES] PPU status
+$EE39 BPL $EE36;  branch if VBL has not been reached
+$EE3B DEX
+$EE3C BNE $EE36;  exit loop when X = 0
+
+$EE3E STX $4022;  disable timer interrupt
+$EE41 STX $4023;  disable sound & disk I/O
+$EE44 LDA #$83
+$EE46 STA $4023;  enable sound & disk I/O
+$EE49 STX $FD
+$EE4B STX $FC
+$EE4D STX $FB
+$EE4F STX $4016;  [NES] Joypad & I/O port for port #1
+$EE52 LDA #$2e
+$EE54 STA $FA
+$EE56 STA $4025
+$EE59 LDA #$ff
+$EE5B STA $F9
+$EE5D STA $4026
+$EE60 STX $4010;  [NES] Audio - DPCM control
+$EE63 LDA #$c0
+$EE65 STA $4017;  [NES] Joypad & I/O port for port #2
+$EE68 LDA #$0f
+$EE6A STA $4015;  [NES] IRQ status / Sound enable
+$EE6D LDA #$80
+$EE6F STA $4080
+$EE72 LDA #$e8
+$EE74 STA $408A
+$EE77 LDX #$ff; set up stack
+$EE79 TXS
+$EE7A LDA #$c0
+$EE7C STA $0100
+$EE7F LDA #$80
+$EE81 STA $0101
+
+;if ([$102]=$35)and(([$103]=$53)or([$103]=$AC)) then
+;  [$103]:=$53
+;  CALL RstPPU05
+;  CLI
+;  JMP [$DFFC]
+$EE84 LDA $0102
+$EE87 CMP #$35
+$EE89 BNE $EEA2
+$EE8B LDA $0103
+$EE8E CMP #$53
+$EE90 BEQ $EE9B
+$EE92 CMP #$ac
+$EE94 BNE $EEA2
+$EE96 LDA #$53
+$EE98 STA $0103
+$EE9B JSR RstPPU05
+$EE9E CLI;  enable interrupts
+$EE9F JMP ($DFFC)
+
+;for I:=$F8 downto $01 do [I]:=$00
+$EEA2 LDA #$00
+$EEA4 LDX #$f8
+$EEA6 STA $00,X
+$EEA8 DEX
+$EEA9 BNE $EEA6
+
+;[$300]:=$7D
+;[$301]:=$00
+;[$302]:=$FF
+$EEAB STA $0301
+$EEAE LDA #$7d
+$EEB0 STA $0300
+$EEB3 LDA #$ff
+$EEB5 STA $0302
+
+;if Ctrlr1 = $30 then
+;  [$0102]:=0
+;  JMP $F4CC
+$EEB8 JSR GetCtrlrSts
+$EEBB LDA $F7;  read ctrlr 1 buttons
+$EEBD CMP #$30; test if only select & start pressed
+$EEBF BNE $EEC9
+$EEC1 LDA #$00
+$EEC3 STA $0102
+$EEC6 JMP $F4CC
+
+$EEC9 JSR InitGfx
+$EECC JSR $F0FD
+$EECF LDA #$4a
+$EED1 STA $A1
+$EED3 LDA #$30
+$EED5 STA $B1
+$EED7 LDA #$e4
+$EED9 STA $83
+$EEDB LDA #$a9
+$EEDD STA $FC
+
+;test if disk inserted
+$EEDF LDA $4032
+$EEE2 AND #$01
+$EEE4 BEQ $EEEA
+
+$EEE6 LDA #$04
+$EEE8 STA $E1
+$EEEA LDA #$34
+$EEEC STA $90
+$EEEE JSR $F376
+$EEF1 JSR VINTwait
+$EEF4 LDA $90
+$EEF6 CMP #$32
+$EEF8 BNE $EEFE
+$EEFA LDA #$01
+$EEFC STA $E1
+$EEFE JSR $F0B4
+$EF01 JSR RstPPU05
+$EF04 JSR EnPfOBJ
+$EF07 JSR $EFE8
+$EF0A LDX #$60
+$EF0C LDY #$20
+$EF0E JSR RndmNbrGen
+$EF11 JSR $F143
+$EF14 JSR $F342
+$EF17 LDX #$00
+$EF19 JSR $F1E5
+$EF1C LDX #$10
+$EF1E JSR $F1E5
+$EF21 LDA #$c0
+$EF23 STA $00
+$EF25 LDA #$00
+$EF27 STA $01
+$EF29 JSR $EC22
+$EF2C LDA #$d0
+$EF2E STA $00
+$EF30 JSR $EC22
+$EF33 LDA $4032
+$EF36 AND #$01
+$EF38 BNE $EEEA
+$EF3A LDA $FC
+$EF3C BEQ $EF42
+$EF3E LDA #$01
+$EF40 STA $FC
+$EF42 LDA $90
+$EF44 BNE $EEEE
+$EF46 JSR DisOBJs
+$EF49 JSR VINTwait
+$EF4C JSR PPUdataPrsr,$EFFF
+$EF51 JSR PPUdataPrsr,$F01C
+$EF56 JSR RstPPU05
+$EF59 JSR LoadFiles,$EFF5,$EFF5; load the FDS disk boot files
+$EF60 BNE $EF6C
+$EF62 JSR $F431
+$EF65 BEQ $EFAF
+$EF67 JSR $F5FB
+$EF6A LDA #$20
+$EF6C STA $23
+$EF6E JSR InitGfx
+$EF71 JSR $F0E1
+$EF74 JSR $F0E7
+$EF77 JSR $F0ED
+$EF7A JSR $F179
+$EF7D LDA #$10
+$EF7F STA $A3
+$EF81 LDA $22
+$EF83 BEQ $EF8B
+$EF85 LDA #$01
+$EF87 STA $83
+$EF89 DEC $21
+$EF8B JSR $F376
+$EF8E JSR VINTwait
+$EF91 JSR $E86A
+$EF94 JSR RstPPU05
+$EF97 JSR EnPF
+$EF9A JSR $EFE8
+$EF9D LDA #$02
+$EF9F STA $E1
+$EFA1 LDA $A3
+$EFA3 BNE $EF8B
+$EFA5 LDA $4032
+$EFA8 AND #$01
+$EFAA BEQ $EFA5
+$EFAC JMP Reset
+
+
+$EFAF LDA #$20
+$EFB1 STA $A2
+$EFB3 JSR VINTwait
+$EFB6 JSR RstPPU05
+$EFB9 JSR EnPF
+$EFBC LDX $FC
+$EFBE INX
+$EFBF INX
+$EFC0 CPX #$b0
+$EFC2 BCS $EFC6
+$EFC4 STX $FC
+$EFC6 JSR $EFE8
+$EFC9 LDA $A2
+$EFCB BNE $EFB3
+$EFCD LDA #$35
+$EFCF STA $0102
+$EFD2 LDA #$ac
+$EFD4 STA $0103
+$EFD7 JSR DisPF
+$EFDA LDY #$07
+$EFDC JSR $F48C
+$EFDF LDA #$00
+$EFE1 STA $FD
+$EFE3 STA $FC
+$EFE5 JMP $EE9B
+
+
+$EFE8 JSR $FF5C
+$EFEB LDX #$80
+$EFED LDA #$9f
+$EFEF LDY #$bf
+$EFF1 JSR $E9D3
+$EFF4 RTS
+
+
+FFFFFFFFFFFF0000FFFF
+
+$EFFF 21A6 54 24
+  FF
+
+$F004 21A6 14 19150E0A1C0E241C0E1D240D121C14240C0A1B0D
+  FF
+
+$F01C 21A6 0E 1718202415180A0D121710262626
+  FF
+
+0D121C14241C0E1D0B0A1D1D0E1B2224
+0A250B241C120D0E0D121C1424171826
+21A6140D121C14241D1B181E0B150E24
+240E1B1B260200FF20E810191B0A1624
+0C1B0A16242424242418142168041918
+1B1D3F00080F200F0F0F0F0F0F2BC050
+002BD07055FF
+
+;$F094
+80B80000000000001000320000000100
+80B800F000000000000132180000FF00
+
+
+$F0B4 LDA $FC
+$F0B6 BEQ $F0C0
+$F0B8 DEC $FC
+$F0BA BNE $F0C0
+$F0BC LDA #$10
+$F0BE STA $94
+$F0C0 LDX $94
+$F0C2 BEQ $F0CD
+$F0C4 DEX
+$F0C5 BEQ $F0E1
+$F0C7 DEX
+$F0C8 BEQ $F0E7
+$F0CA DEX
+$F0CB BEQ $F0ED
+$F0CD JSR $E9C8
+$F0D0 JSR $E86A
+$F0D3 LDA $92
+$F0D5 BNE $F0F3
+$F0D7 JSR PPUdataPrsr,$EFFF
+$F0DC LDA #$40
+$F0DE STA $92
+$F0E0 RTS
+
+
+$F0E1 JSR PPUdataPrsr,$F716
+$F0E6 RTS
+
+
+$F0E7 JSR PPUdataPrsr,$F723
+$F0EC RTS
+
+
+$F0ED JSR PPUdataPrsr,$F72C
+$F0F2 RTS
+
+
+$F0F3 CMP #$2e
+$F0F5 BNE $F0FC
+$F0F7 JSR PPUdataPrsr,$F004
+$F0FC RTS
+
+
+;############################################################################
+;fill $0200-$02FF with $F4
+$F0FD LDA #$f4
+$F0FF LDX #$02
+$F101 LDY #$02
+$F103 JSR MemFill
+
+;move data
+;for I:=0 to $1F do [$C0+I]:=[$F094+I]
+$F106 LDY #$20
+$F108 LDA $F093,Y
+$F10B STA $00BF,Y
+$F10E DEY
+$F10F BNE $F108
+
+;fill $0230-$02FF with random data
+;for I:=$0230 to $02FF do [I]:=Random(256)
+$F111 LDA #$d0; loop count
+$F113 STA $60;  load random number target with any data
+$F115 STA $01;  save loop count in [$01]
+$F117 LDY #$02
+$F119 LDX #$60
+$F11B JSR RndmNbrGen; [$60] and [$61] are random number target
+$F11E LDA $60;  get random number
+$F120 LDX $01;  load loop count (and index)
+$F122 STA $022F,X;  write out random #
+$F125 DEX
+$F126 STX $01;  save loop count
+$F128 BNE $F117
+
+;fill every 4th byte in random data area with $33
+;for I:=0 to $33 do [I*4+$0231]:=$18
+$F12A LDA #$18
+$F12C LDX #$d0
+$F12E STA $022D,X
+$F131 DEX
+$F132 DEX
+$F133 DEX
+$F134 DEX
+$F135 BNE $F12E
+
+;and & or every 4th byte in random data
+;for I:=0 to $33 do [I*4+$0232]:=([I*4+$0232]-1)and $03 or $20
+$F137 LDX #$d0
+$F139 STX $24
+$F13B JSR $F156
+$F13E CPX #$d0
+$F140 BNE $F13B
+$F142 RTS
+
+
+;############################################################################
+
+$F143 LDA $84
+$F145 BNE $F156
+$F147 LDA #$04
+$F149 STA $84
+$F14B LDX #$d0
+$F14D DEC $022C,X
+$F150 DEX
+$F151 DEX
+$F152 DEX
+$F153 DEX
+$F154 BNE $F14D
+
+;for I:=0 to 3 do
+;  [$022E+X]:=([$022E+X]-1)and $03 or $20
+;  X-=4
+;  if X=0 then X:=$d0
+;end
+$F156 LDY #$04
+$F158 LDX $24
+$F15A DEC $022E,X
+$F15D LDA #$03
+$F15F AND $022E,X
+$F162 ORA #$20
+$F164 STA $022E,X
+$F167 DEX
+$F168 DEX
+$F169 DEX
+$F16A DEX
+$F16B BNE $F16F
+$F16D LDX #$d0
+$F16F STX $24
+$F171 DEY
+$F172 BNE $F158
+$F174 RTS
+
+
+$F175 DB  01 02 07 08
+
+
+$F179 LDY #$18
+$F17B LDA $F04D,Y
+$F17E STA $003F,Y
+$F181 DEY
+$F182 BNE $F17B
+$F184 LDA $23
+$F186 AND #$0f
+$F188 STA $56
+$F18A LDA $23
+$F18C LSR A
+$F18D LSR A
+$F18E LSR A
+$F18F LSR A
+$F190 STA $55
+$F192 CMP #$02
+$F194 BEQ $F1BD
+$F196 LDY #$0e
+$F198 LDA #$24
+$F19A STA $0042,Y
+$F19D DEY
+$F19E BNE $F19A
+$F1A0 LDY #$05
+$F1A2 LDA $23
+$F1A4 DEY
+$F1A5 BEQ $F1BD
+$F1A7 CMP $F174,Y
+$F1AA BNE $F1A4
+$F1AC TYA
+$F1AD ASL A
+$F1AE ASL A
+$F1AF ASL A
+$F1B0 TAX
+$F1B1 LDY #$07
+$F1B3 DEX
+$F1B4 LDA $F02E,X
+$F1B7 STA $0043,Y
+$F1BA DEY
+$F1BB BPL $F1B3
+$F1BD JSR PPUdataPrsr,$0040
+$F1C2 RTS
+
+
+;############################################################################
+;copy font bitmaps into PPU memory
+;src:CPU[$E001] dest:PPU[$1000] tiles:41 (41*8 bytes, 1st plane is inverted)
+LoadFonts:  LDA #$0d
+$F1C5 LDY #$10
+$F1C7 LDX #$29
+$F1C9 JSR CPUtoPPUcpy,$E001
+
+;copy inverted font bitmaps from PPU mem to [$0400]
+;src:PPU[$1000] dest:CPU[$0400] tiles:41 (41*8 bytes)
+$F1CE LDA #$06
+$F1D0 LDY #$10
+$F1D2 LDX #$29
+$F1D4 JSR CPUtoPPUcpy,$0400
+
+;copy back fonts & set first plane to all 1's
+;src:CPU[$0400] dest:PPU[$1000] tiles:41 (41*8 bytes, 1st plane is all 1's)
+$F1D9 LDA #$09
+$F1DB LDY #$10
+$F1DD LDX #$29
+$F1DF JSR CPUtoPPUcpy,$0400
+$F1E4 RTS
+
+
+;############################################################################
+
+$F1E5 JSR $F1F2
+$F1E8 JSR $F2EC
+$F1EB JSR $F273
+$F1EE JSR $F2C6
+$F1F1 RTS
+
+
+$F1F2 LDA $20,X
+$F1F4 BNE $F227
+$F1F6 LDA $C0,X
+$F1F8 BNE $F227
+$F1FA LDA $B0
+$F1FC BNE $F227
+$F1FE LDA $81,X
+$F200 BNE $F227
+$F202 LDA $62,X
+$F204 AND #$3c
+$F206 STA $81,X
+$F208 TXA
+$F209 BNE $F228
+$F20B LDA $B2
+$F20D BNE $F236
+$F20F LDA $D0
+$F211 BEQ $F23D
+$F213 LDA $22
+$F215 BNE $F21D
+$F217 LDA $C3
+$F219 CMP #$78
+$F21B BCC $F24D
+$F21D LDA #$00
+$F21F STA $C8,X
+$F221 STA $CF,X
+$F223 LDA #$ff
+$F225 STA $CE,X
+$F227 RTS
+
+
+$F228 LDA $C0
+$F22A BEQ $F25A
+$F22C LDA $22
+$F22E BNE $F21D
+$F230 LDA $63,X
+$F232 CMP #$80
+$F234 BCS $F24D
+$F236 LDA #$00
+$F238 STA $CF,X
+$F23A STA $CE,X
+$F23C RTS
+
+
+$F23D LDA $C8
+$F23F BNE $F247
+$F241 LDA $63,X
+$F243 CMP #$c0
+$F245 BCC $F21D
+$F247 LDA $64,X
+$F249 CMP #$80
+$F24B BCC $F236
+$F24D LDA #$10
+$F24F STA $C8,X
+$F251 LDA #$00
+$F253 STA $CF,X
+$F255 LDA #$01
+$F257 STA $CE,X
+$F259 RTS
+
+
+$F25A LDA $64,X
+$F25C LDY $C8
+$F25E BEQ $F264
+$F260 CMP #$40
+$F262 BCC $F24D
+$F264 CMP #$c0
+$F266 BCC $F236
+$F268 LDA #$40
+$F26A STA $CF,X
+$F26C LDA #$00
+$F26E STA $CE,X
+$F270 STA $C8,X
+$F272 RTS
+
+
+$F273 LDA $20,X
+$F275 BEQ $F2AA
+$F277 BMI $F2AB
+$F279 CLC
+$F27A LDA #$30
+$F27C ADC $CD,X
+$F27E STA $CD,X
+$F280 LDA #$00
+$F282 ADC $CC,X
+$F284 STA $CC,X
+$F286 CLC
+$F287 LDA $CD,X
+$F289 ADC $C2,X
+$F28B STA $C2,X
+$F28D LDA $CC,X
+$F28F ADC $C1,X
+$F291 CMP #$b8
+$F293 BCC $F2A4
+$F295 TXA
+$F296 BNE $F2B6
+$F298 LDA $60,X
+$F29A AND #$30
+$F29C STA $81,X
+$F29E LDA #$00
+$F2A0 STA $20,X
+$F2A2 LDA #$b8
+$F2A4 STA $C1,X
+$F2A6 LDA #$03
+$F2A8 STA $C5,X
+$F2AA RTS
+
+
+$F2AB DEC $20,X
+$F2AD LDA #$fd
+$F2AF STA $CC,X
+$F2B1 LDA #$00
+$F2B3 STA $CD,X
+$F2B5 RTS
+
+
+$F2B6 STA $C8,X
+$F2B8 LDA #$01
+$F2BA STA $CE,X
+$F2BC LDA #$c0
+$F2BE STA $CF,X
+$F2C0 LDA #$ff
+$F2C2 STA $81,X
+$F2C4 BNE $F29E
+$F2C6 LDA $B0
+$F2C8 BNE $F2E7
+$F2CA LDA $A1,X
+$F2CC BNE $F2E7
+$F2CE LDA $C0,X
+$F2D0 BEQ $F2E7
+$F2D2 LDA $62,X
+$F2D4 ORA #$10
+$F2D6 AND #$3c
+$F2D8 STA $81,X
+$F2DA LDY #$10
+$F2DC LDA $F094,X
+$F2DF STA $C0,X
+$F2E1 INX
+$F2E2 DEY
+$F2E3 BNE $F2DC
+$F2E5 STY $B0,X
+$F2E7 RTS
+
+
+$F2E8 DB  00 02 01 02
+
+
+$F2EC LDA $C0,X
+$F2EE BNE $F329
+$F2F0 CLC
+$F2F1 LDA $CF,X
+$F2F3 ADC $C4,X
+$F2F5 STA $C4,X
+$F2F7 LDA $CE,X
+$F2F9 ADC $C3,X
+$F2FB LDY $B0
+$F2FD CPY #$20
+$F2FF BCS $F315
+$F301 CMP #$f8
+$F303 BCC $F32A
+$F305 CPY #$1f
+$F307 BCS $F315
+$F309 LDA $60,X
+$F30B AND #$2f
+$F30D ORA #$06
+$F30F STA $A1,X
+$F311 LDA #$80
+$F313 STA $C0,X
+$F315 STA $C3,X
+$F317 LSR A
+$F318 LSR A
+$F319 AND #$03
+$F31B TAY
+$F31C LDA $CE,X
+$F31E ORA $CF,X
+$F320 BNE $F324
+$F322 LDY #$01
+$F324 LDA $F2E8,Y
+$F327 STA $C5,X
+$F329 RTS
+
+
+$F32A CMP #$78
+$F32C BNE $F315
+$F32E CPX $22
+$F330 BNE $F315
+$F332 LDY $20,X
+$F334 BNE $F315
+$F336 LDY #$00
+$F338 STY $CE,X
+$F33A STY $CF,X
+$F33C LDY #$80
+$F33E STY $20,X
+$F340 BNE $F315
+$F342 LDA $B0
+$F344 BNE $F36D
+$F346 LDA $C0
+$F348 ORA $D0
+$F34A BNE $F36D
+$F34C CLC
+$F34D LDA $C3
+$F34F ADC #$19
+$F351 CMP $D3
+$F353 BCC $F36D
+$F355 STA $D3
+$F357 LDA #$02
+$F359 STA $CE
+$F35B STA $DE
+$F35D LDA #$00
+$F35F STA $CF
+$F361 STA $DF
+$F363 LDA #$10
+$F365 STA $C8
+$F367 STA $D8
+$F369 LDA #$30
+$F36B STA $B0
+$F36D RTS
+
+
+$F36E DB  2A 0A 25 05 21 01 27 16
+
+
+$F376 LDY #$08
+$F378 LDA $83
+$F37A BNE $F3C8
+$F37C LDA $93
+$F37E BNE $F3EF
+$F380 LDX #$00
+$F382 LDA $C1,X
+$F384 CMP #$a4
+$F386 BCS $F39E
+$F388 LDA #$20
+$F38A LDY $B2
+$F38C BNE $F39C
+$F38E LDA #$08
+$F390 LDY $65
+$F392 CPY #$18
+$F394 BCS $F39C
+$F396 LDA #$08
+$F398 STA $B2
+$F39A LDA #$20
+$F39C STA $83,X
+$F39E CPX #$10
+$F3A0 LDX #$10
+$F3A2 BCC $F382
+$F3A4 LDA $22
+$F3A6 BEQ $F3C7
+$F3A8 LDA $82
+$F3AA BNE $F3C7
+$F3AC LDA #$08
+$F3AE STA $82
+$F3B0 LDX #$0f
+$F3B2 LDA $47
+$F3B4 CMP #$0f
+$F3B6 BNE $F3BA
+$F3B8 LDX #$16
+$F3BA STX $47
+$F3BC LDA #$3f
+$F3BE LDX #$08
+$F3C0 LDY #$08
+$F3C2 JSR $E8D2,$0040
+$F3C7 RTS
+
+
+$F3C8 LDA $F634,Y
+$F3CB STA $003F,Y
+$F3CE DEY
+$F3CF BNE $F3C8
+$F3D1 INC $21
+$F3D3 LDA $21
+$F3D5 AND #$06
+$F3D7 TAY
+$F3D8 LDA $F36E,Y
+$F3DB STA $42
+$F3DD LDA $F36F,Y
+$F3E0 STA $43
+$F3E2 LDY #$00
+$F3E4 LDA $B2
+$F3E6 BNE $F3EA
+$F3E8 LDY #$10
+$F3EA STY $22
+$F3EC JMP $F3BC
+
+
+$F3EF LDA $F63F,Y
+$F3F2 STA $003F,Y
+$F3F5 DEY
+$F3F6 BNE $F3EF
+$F3F8 BEQ $F3EA
+
+
+;############################################################################
+;initialize graphics#########################################################
+;############################################################################
+;this subroutine copies pattern tables from ROM into the VRAM, and also
+;sets up the name & palette tables.
+
+;entry point
+InitGfx:  JSR DisPfOBJ; disable objects & playfield for video xfers
+
+;src:CPU[$F735] dest:PPU[$1300] transfer:88 tiles
+$F3FD LDA #$00
+$F3FF LDX #$58
+$F401 LDY #$13
+$F403 JSR CPUtoPPUcpy,$F735
+
+;src:CPU[$FCA5] dest:PPU[$0000] transfer:25 tiles
+$F408 LDA #$00
+$F40A LDX #$19
+$F40C LDY #$00
+$F40E JSR CPUtoPPUcpy,$FCA5
+
+$F413 JSR LoadFonts;  load fonts from ROM into video mem
+
+;dest:PPU[$2000] NTfillVal:=$6D ATfillVal:=$aa
+$F416 LDA #$20
+$F418 LDX #$6d
+$F41A LDY #$aa
+$F41C JSR VRAMfill
+
+;dest:PPU[$2800] NTfillVal:=$6D ATfillVal:=$aa
+$F41F LDA #$28
+$F421 LDX #$6d
+$F423 LDY #$aa
+$F425 JSR VRAMfill
+
+$F428 JSR VINTwait
+$F42B JSR PPUdataPrsr,InitNT; initialize name table
+$F430 RTS
+
+
+;############################################################################
+;############################################################################
+;############################################################################
+
+$F431 JSR DisPfOBJ
+$F434 LDY #$03
+$F436 JSR $F48C
+$F439 JSR LoadFonts
+$F43C JSR VINTwait
+$F43F JSR PPUdataPrsr,$F080
+$F444 LDA #$20
+$F446 LDX #$28
+$F448 LDY #$00
+$F44A JSR VRAMfill
+$F44D LDA $FF
+$F44F AND #$fb
+$F451 STA $FF
+$F453 STA $2000;  [NES] PPU setup #1
+$F456 LDX $2002;  [NES] PPU status
+$F459 LDX #$28
+$F45B STX $2006;  [NES] VRAM address select
+$F45E LDA #$00
+$F460 STA $2006;  [NES] VRAM address select
+$F463 LDA $2007;  [NES] VRAM data
+$F466 LDY #$00
+$F468 LDA $2007;  [NES] VRAM data
+$F46B CMP $ED37,Y
+$F46E BNE $F483
+$F470 INY
+$F471 CPY #$e0
+$F473 BNE $F468
+$F475 STX $2006;  [NES] VRAM address select
+$F478 STY $2006;  [NES] VRAM address select
+$F47B LDA #$24
+$F47D STA $2007;  [NES] VRAM data
+$F480 INY
+$F481 BNE $F47B
+$F483 RTS
+
+
+$F484 DB  02 30 10 29 32 00 29 10
+
+
+$F48C LDX #$03
+$F48E LDA $F484,Y
+$F491 STA $07,X
+$F493 DEY
+$F494 DEX
+$F495 BPL $F48E
+$F497 LDA #$29
+$F499 STA $0B
+$F49B LDA $07
+$F49D LDX #$01
+$F49F LDY $09
+$F4A1 JSR CPUtoPPUcpy,$0010
+$F4A6 LDA $08
+$F4A8 LDX #$01
+$F4AA LDY $0A
+$F4AC JSR CPUtoPPUcpy,$0010
+$F4B1 LDY #$01
+$F4B3 CLC
+$F4B4 LDA #$10
+$F4B6 ADC $0007,Y
+$F4B9 STA $0007,Y
+$F4BC LDA #$00
+$F4BE ADC $0009,Y
+$F4C1 STA $0009,Y
+$F4C4 DEY
+$F4C5 BPL $F4B3
+$F4C7 DEC $0B
+$F4C9 BNE $F49B
+$F4CB RTS
+
+
+$F4CC LDA #$20
+$F4CE LDX #$24
+$F4D0 LDY #$00
+$F4D2 JSR VRAMfill
+$F4D5 JSR VINTwait
+$F4D8 JSR PPUdataPrsr,$F066
+$F4DD JSR $F5FB
+$F4E0 BNE $F527
+$F4E2 LDA #$00
+$F4E4 LDX #$00
+$F4E6 LDY #$00
+$F4E8 JSR CPUtoPPUcpy,$C000
+$F4ED LDA #$00
+$F4EF LDX #$00
+$F4F1 LDY #$10
+$F4F3 JSR CPUtoPPUcpy,$D000
+$F4F8 LDA #$02
+$F4FA LDX #$00
+$F4FC LDY #$00
+$F4FE JSR CPUtoPPUcpy,$C000
+$F503 LDA #$02
+$F505 LDX #$00
+$F507 LDY #$10
+$F509 JSR CPUtoPPUcpy,$D000
+$F50E LDA #$C0
+$F510 STA $01
+$F512 LDY #$00
+$F514 STY $00
+$F516 LDX #$20
+$F518 LDA #$7f
+$F51A ADC #$02
+$F51C JSR $F61B
+$F51F BEQ $F54E
+$F521 LDA $01
+$F523 AND #$03
+$F525 STA $01
+$F527 LDA #$11
+$F529 STA $0B
+$F52B LDY #$03
+$F52D LDA $00
+$F52F TAX
+$F530 AND #$0F
+$F532 STA $0007,Y
+$F535 DEY
+$F536 TXA
+$F537 LSR A
+$F538 LSR A
+$F539 LSR A
+$F53A LSR A
+$F53B STA $0007,Y
+$F53E LDA $01
+$F540 DEY
+$F541 BPL $F52F
+$F543 LDA #$20
+$F545 LDX #$f4
+$F547 LDY #$05
+$F549 JSR $E8D2,$0007
+$F54E JSR LoadFonts
+$F551 JSR GetCtrlrSts
+$F554 LDA $F7
+$F556 CMP #$81
+$F558 BNE $F5B8
+$F55A JSR PPUdataPrsr,$F56B
+$F55F JSR VINTwait
+$F562 JSR RstPPU05
+$F565 JSR EnPF
+$F568 JMP $F568
+
+
+  20E7 11 020C03032412171D0E1B170A15241B1816
+  2163 19 191B18101B0A160E0D240B22241D0A140A18241C0A200A1718
+  21A3 19 1712171D0E170D18240C1827151D0D26240D0E1F2617182602
+  FF
+
+
+$F5B8 LDA #$01
+$F5BA STA $0F
+$F5BC LDA #$ff
+$F5BE CLC
+$F5BF PHA
+$F5C0 PHP
+$F5C1 JSR VINTwait
+$F5C4 JSR $E86A
+$F5C7 JSR RstPPU05
+$F5CA JSR EnPF
+$F5CD DEC $0F
+$F5CF BNE $F5DD
+$F5D1 PLP
+$F5D2 PLA
+$F5D3 STA $4026
+$F5D6 ROL A
+$F5D7 PHA
+$F5D8 PHP
+$F5D9 LDA #$19
+$F5DB STA $0F
+$F5DD LDA $4033
+$F5E0 LDX #$07
+$F5E2 LDY #$01
+$F5E4 ASL A
+$F5E5 BCS $F5E8
+$F5E7 DEY
+$F5E8 STY $07,X
+$F5EA DEX
+$F5EB BPL $F5E2
+$F5ED LDA #$21
+$F5EF LDX #$70
+$F5F1 LDY #$08
+$F5F3 JSR $E8D2,$0007
+$F5F8 JMP $F5C1
+
+
+$F5FB LDA #$60
+$F5FD LDX #$80
+$F5FF STX $03
+$F601 PHA
+$F602 STA $01
+$F604 LDY #$00
+$F606 STY $00
+$F608 CLV
+$F609 JSR $F61B
+$F60C PLA
+$F60D STA $01
+$F60F STY $00
+$F611 LDX $03
+$F613 LDA #$7f
+$F615 ADC #$02
+$F617 JSR $F61B
+$F61A RTS
+
+
+$F61B STX $02
+$F61D LDA $02
+$F61F BVS $F62E
+$F621 STA ($00),Y
+$F623 INC $02
+$F625 DEY
+$F626 BNE $F61D
+$F628 INC $01
+$F62A DEX
+$F62B BNE $F61B
+$F62D RTS
+
+
+$F62E CMP ($00),Y
+$F630 BEQ $F623
+$F632 STY $00
+$F634 RTS
+
+;$F635
+0F 30 27 16 0F 10 00 16
+
+;PPU processor data
+InitNT: 3F08 18 0F21010F0F0002010F2716010F27301A0F0F010F0F0F0F0F
+  20E4 02 6E73
+  20E6 54 77
+  20FA 02 787C
+  2104 02 6F74
+  2106 54 24
+  211A 02 797D
+  2124 C5 70
+  213B C5 70
+  2125 C5 24
+  213A C5 24
+  21C4 02 7175
+  21C6 54 24
+  21DA 02 7A7E
+  21E4 02 7276
+  21E6 54 77
+  21FA 02 7B7F
+  2126 14 3034383B3F2424474B2424242424245D61242428
+  2146 14 3135323C404346484C4E513C54575A5E6265686B
+  2166 14 3236393D414432494D4F523D55585B5F6366696C
+  2186 14 33373A3E4245334A4550533E56595C6064676A24
+  21A6 54 24
+  220F C4 83
+  2210 C4 84
+  228F 02 8586
+  23E0 50 FF
+  23F0 48 AF
+  FF
+
+  2040 60 80
+  2020 60 81
+  2000 60 81
+  FF
+
+  2340 60 80
+  2360 60 81
+  FF
+
+  2380 60 82
+  23A0 60 82
+  FF
+
+;PATTERN TABLE DATA
+;$F735
+FFC0C0C0C0C0C0C080BFBFBFBFBFBFBF
+C0C0C0C0C0C0C0C0BFBFBFBFBFBFBFBF
+C0C0C0C0C0C0C0C0BFBFBFBFBFBFBFBF
+C0C0C0FFFFFFFFFFBFBFBFFFFFFFFFFF
+7F7F3F3F1F1F0F0FFFFFFFFFFFFFFFFF
+078783C3C1E1E0F0FF7F7FBFBFDFDFEF
+F0F8F8FCFCFEFEFFEFF7F7FBFBFDFDFE
+FFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFF
+FFC0C0C0C0C0C0C080BFBFBFBFBFBFBF
+0000000000000000FFFFFFFFFFFFFFFF
+008080FFFFFFFFFFFF7F7FFFFFFFFFFF
+FFE0E0E0E0FFFFFFC0DFDFDFDFFFFFFF
+FFE0E0E0E0E0E0E0C0DFDFDFDFDFDFDF
+E0E0E0E0E0E0E0E0DFDFDFDFDFDFDFDF
+E0E0E0FFFFFFFFFFDFDFDFFFFFFFFFFF
+FF7F7F7F7FFFFFFF7FFFFFFFFFFFFFFF
+FF7070707070707060EFEFEFEFEFEFEF
+7070707070707070EFEFEFEFEFEFEFEF
+707070FFFFFFFFFFEFEFEFFFFFFFFFFF
+FF20000F1F1F3F3F20DFFFFEFFFFFFFF
+3F3F3F3F3F3F3F3FFFFFFFFFFFFFFFFF
+3F3F3FFFFFFFFFFFFFFFFFFFFFFFFFFF
+FF7F1F078181C0C07F9FE7FB7F7FBFBF
+FFFFFFFFFFF0F0F0FFFFFFFFE0EFEF0F
+8090F0F0F0F0F0F07F6FEFEFEFEFEFEF
+F0F0F0F0F0F0F0F0EFEFEFEFEFEFEFEF
+F0F0F0FFFFFFFFFFEFEFEFFFFFFFFFFF
+FFFFFFFFFF3F3F3FFFFFFFFF3FFFFFC7
+07073F3F3E3E3C3CFFFFFFFEFDFDFBFB
+3C3C3C3C3C3E3E3EFBFBFBFBFBFDFDFF
+FFE0800F1F1F1F3FE09F7FFFFFFFFFC0
+00001F1F1F1F1F1FFFFFFFFFFFFFFFEF
+0F80E0FFFFFFFFFFF0FFFFFFFFFFFFFF
+FF3F0FC7E1E1E0E03FCFF7BBDFDFDF1F
+0000FFFFE0E1E1C3FFFFFFC0DFDFDFBF
+870F3FFFFFFFFFFF7FFFFFFFFFFFFFFF
+FF40001C3F3F7F7F40BFFFFFFEFEFFFF
+7F7F7F7F7F7F7F7FFFFFFFFFFFFFFFFF
+7F7F7FFFFFFFFFFFFFFFFFFFFFFFFFFF
+FFFF3F0F03038181FF3FCFF7FFFF7F7F
+81818181818181817F7F7F7F7F7F7F7F
+818181FFFFFFFFFF7F7F7FFFFFFFFFFF
+FFFCF0E0E0C0C0C0FCF3EFDFDFBFBFBF
+C0C0C0C0C0C0E0E0BFBFBFBFBFBFDFDF
+F0F0FCFFFFFFFFFFEFFFFFFFFFFFFFFF
+FFFEFEFEFEFEFEFEFCFDFDFDFDFDFDFD
+FE0602007CFEFEFE05F9FDFFFBFDFDFD
+FEFEFEFEFEFEFC78FDFDFDFDFDFD7B87
+020206FFFFFFFFFFFDFDFDFFFFFFFFFF
+FF0707070707070707FFFFFFFFFFFFFF
+0707070707070707FFFFFFFFFFFFFEFE
+0707070707070707FEFEFEFEFEFFFFFF
+070707FFFFFFFFFFFFFFFFFFFFFFFFFF
+FFF8E0C183870707F8E7DFBF7F7FFFFF
+07070707078783C3FFFFFFFFFF7F7FBD
+E1E0F8FFFFFFFFFFDEFFFFFFFFFFFFFF
+FF0F03C1F0F8F8F80FF3FDFEEFF7F7F7
+F8F8F8F8F8F8F0E0F7F7F7F7F7F7EFDF
+C1030FFFFFFFFFFF3FFFFFFFFFFFFFFF
+FFFFFFFF7F7F3F3FFFFFFFFFFFFFFFFF
+3F3F3F3F3F7F7FFFFFFFFFFFFFFFFFFF
+00000000000000000000000000000000
+00000103060C18100003060C1933276F
+30202060404040404F5EDC9CB9B9B9B9
+4040404040404040B9B9B9B9B9B9B9B9
+4040404060202020B9B9B9B99CDE5F5F
+10000000000000006F3F3F1F0E070300
+007FC00000000000FF803FFFFFF0C08F
+071F3F7F7FFFFFFF3F7FFFFFFFFFFFFF
+FFFFFF7F7F3F1F07FFFFFFFFFFFFFFFF
+100F000000000000EFF0FFFFFF0080FF
+00FF000000000000FF00FFFFFF0000FF
+00FA000000000000FF05FFFFFF3F1FFF
+E0F9FCFEFEFFFFFFFFFEFFFFFFFFFFFF
+FFFFFFFEFEFCF9E3FFFFFFFFFFFFFEFC
+0EF8000000000000F107FFFFFC0001FF
+000000000000000000C0E0F0F8FCFCFE
+0000808040404040FEFA7B79B9B9B9B9
+40404040C0808000B9B9B9B9397372E2
+0000000000000000E6C48C183060C000
+00FF00FF00FF00FFFFFFFFFFFFFFFFFF
+FF00FFFFFF00FFFFFFFFFFFFFFFFFFFF
+FFFF00FFFFFFFFFFFFFFFFFFFFFFFFFF
+06060606060606000000000000000000
+60606060606060000000000000000000
+1F5F505757501F002020AFA7A7AF603F
+F8FA0AEAEA0AF8000404F5E5E5F506FC
+
+;$FCA5
+000000000000031F00000003030F0002
+3F1F0F0720707020041E000001030F1F
+00040F1F0F0C00000F072F3F3F1C1800
+000000000000F0F800000080E0F0F048
+F8FCF8E010103226489C0800F0FCFCF8
+7CF8F8FCFC780000F8F8F8FCFC7C1C38
+00000000000000070000000007071F01
+3F7F3F1F0F01C2C204083D0000070F1F
+C6071F1F0F0F00003F7F1D1F0F0F070F
+00000000000000E00000000000C0E0E0
+F0F0F8F0C00000009090381000E0F0F8
+0C1CFCF8F8780000F0E0E0F4FE7E0200
+000000000000031F00000003030F0002
+3F1F0F0700010113041E000003070F0F
+1F1F0F07070300000F0D0F0707030001
+000000000000F0F800000080E0F0F048
+F8FCF8E0800000C0489C0800E0F0F8F8
+80C0F0F0F0E00000F8301030F0E0E0E0
+001C1E0E0400000700000010183B3838
+0F070303060C090F313F1C1E0F0F4F4F
+1F1F1F07000000007E7F7F0700000000
+000000000000FCFE000000E0F8FC3C92
+FEFFFEF860C0838712A70200FCFEFCF0
+D2F0E0F0F0600000F0F8FCFEF2600000
+00000000000000008000000000000000
+
+$FE35 DB  FF
+
+$FE36 LSR A
+$FE37 BCS $FE66
+$FE39 LSR $E1
+$FE3B BCS $FE47
+$FE3D LSR A
+$FE3E BCS $FEA6
+$FE40 LSR $E1
+$FE42 BCS $FE7A
+$FE44 JMP $FF6A
+
+
+$FE47 LDA #$10
+$FE49 STA $4000;  [NES] Audio - Square 1
+$FE4C LDA #$01
+$FE4E STA $4008;  [NES] Audio - Triangle
+$FE51 STY $E3
+$FE53 LDA #$20
+$FE55 STA $E4
+$FE57 LDX #$5c
+$FE59 LDY #$7f
+$FE5B STX $4004;  [NES] Audio - Square 2
+$FE5E STY $4005;  [NES] Audio - Square 2
+$FE61 LDA #$f9
+$FE63 STA $4007;  [NES] Audio - Square 2
+$FE66 LDA $E4
+$FE68 LSR A
+$FE69 BCC $FE6F
+$FE6B LDA #$0d
+$FE6D BNE $FE71
+$FE6F LDA #$7c
+$FE71 STA $4006;  [NES] Audio - Square 2
+$FE74 JMP $FFC6
+
+
+$FE77 JMP $FFCA
+
+
+$FE7A STY $E3
+$FE7C LDX #$9c
+$FE7E LDY #$7f
+$FE80 STX $4000;  [NES] Audio - Square 1
+$FE83 STX $4004;  [NES] Audio - Square 2
+$FE86 STY $4001;  [NES] Audio - Square 1
+$FE89 STY $4005;  [NES] Audio - Square 2
+$FE8C LDA #$20
+$FE8E STA $4008;  [NES] Audio - Triangle
+$FE91 LDA #$01
+$FE93 STA $400C;  [NES] Audio - Noise control reg
+$FE96 LDX #$00
+$FE98 STX $E9
+$FE9A STX $EA
+$FE9C STX $EB
+$FE9E LDA #$01
+$FEA0 STA $E6
+$FEA2 STA $E7
+$FEA4 STA $E8
+$FEA6 DEC $E6
+$FEA8 BNE $FEC1
+$FEAA LDY $E9
+$FEAC INY
+$FEAD STY $E9
+$FEAF LDA $FF1F,Y
+$FEB2 BEQ $FE77
+$FEB4 JSR $FFE9
+$FEB7 STA $E6
+$FEB9 TXA
+$FEBA AND #$3e
+$FEBC LDX #$04
+$FEBE JSR $FFD9
+$FEC1 DEC $E7
+$FEC3 BNE $FEDA
+$FEC5 LDY $EA
+$FEC7 INY
+$FEC8 STY $EA
+$FECA LDA $FF33,Y
+$FECD JSR $FFE9
+$FED0 STA $E7
+$FED2 TXA
+$FED3 AND #$3e
+$FED5 LDX #$00
+$FED7 JSR $FFD9
+$FEDA DEC $E8
+$FEDC BNE $FEFD
+$FEDE LDA #$09
+$FEE0 STA $400E;  [NES] Audio - Noise Frequency reg #1
+$FEE3 LDA #$08
+$FEE5 STA $400F;  [NES] Audio - Noise Frequency reg #2
+$FEE8 LDY $EB
+$FEEA INY
+$FEEB STY $EB
+$FEED LDA $FF46,Y
+$FEF0 JSR $FFE9
+$FEF3 STA $E8
+$FEF5 TXA
+$FEF6 AND #$3e
+$FEF8 LDX #$08
+$FEFA JSR $FFD9
+$FEFD JMP $FF6A
+
+
+0357000008D408BD08B209AB097C093F
+091C08FD08EE09FC09DF060C12180848
+CACED413110F9010C4C8070515C4D2D4
+8E0C4F00D6D6CA0B19179818CED41513
+11D2CACC961857CE0F0F0FCECECECECE
+0F0F0FCECECECECE0F0F0FCE
+
+
+$FF5C LDY $E1
+$FF5E LDA $E3
+$FF60 LSR $E1
+$FF62 BCS $FF7B
+$FF64 LSR A
+$FF65 BCS $FF9A
+$FF67 JMP $FE36
+
+
+$FF6A LDA #$00
+$FF6C STA $E1
+$FF6E RTS
+
+
+$FF6F DB  06 0C 12 47 5F 71 5F 71 8E 71 8E BE
+
+
+$FF7B STA $E3
+$FF7D LDA #$12
+$FF7F STA $E4
+$FF81 LDA #$02
+$FF83 STA $E5
+$FF85 LDX #$9f
+$FF87 LDY #$7f
+$FF89 STX $4000;  [NES] Audio - Square 1
+$FF8C STX $4004;  [NES] Audio - Square 2
+$FF8F STY $4001;  [NES] Audio - Square 1
+$FF92 STY $4005;  [NES] Audio - Square 2
+$FF95 LDA #$20
+$FF97 STA $4008;  [NES] Audio - Triangle
+$FF9A LDA $E4
+$FF9C LDY $E5
+$FF9E CMP $FF6F,Y
+$FFA1 BNE $FFC6
+$FFA3 LDA $FF72,Y
+$FFA6 STA $4002;  [NES] Audio - Square 1
+$FFA9 LDX #$58
+$FFAB STX $4003;  [NES] Audio - Square 1
+$FFAE LDA $FF75,Y
+$FFB1 STA $4006;  [NES] Audio - Square 2
+$FFB4 STX $4007;  [NES] Audio - Square 2
+$FFB7 LDA $FF78,Y
+$FFBA STA $400A;  [NES] Audio - Triangle
+$FFBD STX $400B;  [NES] Audio - Triangle
+$FFC0 LDA $E5
+$FFC2 BEQ $FFC6
+$FFC4 DEC $E5
+$FFC6 DEC $E4
+$FFC8 BNE $FFD6
+$FFCA LDA #$00
+$FFCC STA $E3
+$FFCE LDA #$10
+$FFD0 STA $4000;  [NES] Audio - Square 1
+$FFD3 STA $4004;  [NES] Audio - Square 2
+$FFD6 JMP $FF6A
+
+
+$FFD9 TAY
+$FFDA LDA $FF01,Y
+$FFDD BEQ $FFE8
+$FFDF STA $4002,X;  [NES] Audio - Square 1
+$FFE2 LDA $FF00,Y
+$FFE5 STA $4003,X;  [NES] Audio - Square 1
+$FFE8 RTS
+
+
+$FFE9 TAX
+$FFEA ROR A
+$FFEB TXA
+$FFEC ROL A
+$FFED ROL A
+$FFEE ROL A
+$FFEF AND #$07
+$FFF1 TAY
+$FFF2 LDA $FF1A,Y
+$FFF5 RTS
+
+
+$FFF6 DW  $FFFF $01FF NMI Reset IRQ
+
+
+EOF
+
