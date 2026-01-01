@@ -26,3 +26,5 @@ Designing cartridge with 8KB RAM.<br>
 
 ![3D view of PCB](/Family_BASIC/Images/Nintendo_Famicom_Family_BASIC_3_3D.png)
 
+## [3D System HVC-032](/3D_System_HVC-032)
+Photos & schematic for the controller unit HVC-032.<br>
