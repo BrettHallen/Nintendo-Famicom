@@ -329,7 +329,7 @@
 				(pin output line
 					(at -12.7 -2.54 0)
 					(length 2.54)
-					(name "EYE2+"
+					(name "L+"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -347,7 +347,7 @@
 				(pin output line
 					(at -12.7 -5.08 0)
 					(length 2.54)
-					(name "EYE2-"
+					(name "L-"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -365,7 +365,7 @@
 				(pin output line
 					(at -12.7 -7.62 0)
 					(length 2.54)
-					(name "EYE1+"
+					(name "R+"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -383,7 +383,7 @@
 				(pin output line
 					(at -12.7 -10.16 0)
 					(length 2.54)
-					(name "EYE1-"
+					(name "R-"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2670,6 +2670,26 @@
 			(embedded_fonts no)
 		)
 	)
+	(text_box "Assuming same pinout as for audio:\nTip = left eye (左目)\nRing = right eye (右目)\nSleeve = ground"
+		(exclude_from_sim no)
+		(at 135.89 143.51 0)
+		(size 38.1 10.16)
+		(margins 0.9525 0.9525 0.9525 0.9525)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "179b9023-4214-4b51-af60-e63830dc62bc")
+	)
 	(text_box "L1 markings:\nbrown (1)\nblack (0)\nred (x100)"
 		(exclude_from_sim no)
 		(at 193.04 16.51 0)
@@ -2711,7 +2731,7 @@
 		(uuid "aaeca8d6-833f-4b3e-b3c6-5025dcc2a210")
 	)
 	(junction
-		(at 125.73 168.91)
+		(at 130.81 168.91)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "01225426-9db0-4e49-8ff0-98848a02f81a")
@@ -2873,7 +2893,7 @@
 		(uuid "d942e500-ce04-4001-99e6-6b8ec564f8c8")
 	)
 	(junction
-		(at 123.19 129.54)
+		(at 128.27 129.54)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "dbb50dcd-c846-4e0b-9ea1-d81dffb572b5")
@@ -2913,16 +2933,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "ffaefb05-9cf8-4a14-8622-528f3ec94803")
-	)
-	(wire
-		(pts
-			(xy 125.73 168.91) (xy 115.57 168.91)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "03fe7c80-dff6-43c5-87fa-97e30ac2d37a")
 	)
 	(wire
 		(pts
@@ -3116,16 +3126,6 @@
 	)
 	(wire
 		(pts
-			(xy 123.19 129.54) (xy 118.11 129.54)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2cf327ae-7091-4e52-806d-89be38cdc9ac")
-	)
-	(wire
-		(pts
 			(xy 102.87 180.34) (xy 102.87 179.07)
 		)
 		(stroke
@@ -3256,6 +3256,16 @@
 	)
 	(wire
 		(pts
+			(xy 118.11 129.54) (xy 128.27 129.54)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "406d2e68-765d-40bc-9a33-077f46cffc17")
+	)
+	(wire
+		(pts
 			(xy 69.85 71.12) (xy 87.63 71.12)
 		)
 		(stroke
@@ -3276,7 +3286,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 127) (xy 125.73 127)
+			(xy 133.35 127) (xy 130.81 127)
 		)
 		(stroke
 			(width 0)
@@ -3356,7 +3366,7 @@
 	)
 	(wire
 		(pts
-			(xy 127 168.91) (xy 125.73 168.91)
+			(xy 132.08 168.91) (xy 130.81 168.91)
 		)
 		(stroke
 			(width 0)
@@ -3366,7 +3376,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 129.54) (xy 123.19 129.54)
+			(xy 133.35 129.54) (xy 128.27 129.54)
 		)
 		(stroke
 			(width 0)
@@ -3396,7 +3406,7 @@
 	)
 	(wire
 		(pts
-			(xy 123.19 171.45) (xy 123.19 129.54)
+			(xy 128.27 171.45) (xy 128.27 129.54)
 		)
 		(stroke
 			(width 0)
@@ -3406,7 +3416,7 @@
 	)
 	(wire
 		(pts
-			(xy 125.73 132.08) (xy 125.73 168.91)
+			(xy 130.81 132.08) (xy 130.81 168.91)
 		)
 		(stroke
 			(width 0)
@@ -3456,7 +3466,7 @@
 	)
 	(wire
 		(pts
-			(xy 125.73 127) (xy 125.73 114.3)
+			(xy 130.81 127) (xy 130.81 114.3)
 		)
 		(stroke
 			(width 0)
@@ -3636,7 +3646,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 132.08) (xy 125.73 132.08)
+			(xy 133.35 132.08) (xy 130.81 132.08)
 		)
 		(stroke
 			(width 0)
@@ -3856,6 +3866,16 @@
 	)
 	(wire
 		(pts
+			(xy 115.57 168.91) (xy 130.81 168.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b0a4fdfe-3c43-43ec-8aa2-0257b78e5b90")
+	)
+	(wire
+		(pts
 			(xy 87.63 78.74) (xy 81.28 78.74)
 		)
 		(stroke
@@ -3896,7 +3916,7 @@
 	)
 	(wire
 		(pts
-			(xy 125.73 173.99) (xy 125.73 179.07)
+			(xy 130.81 173.99) (xy 130.81 179.07)
 		)
 		(stroke
 			(width 0)
@@ -3956,7 +3976,7 @@
 	)
 	(wire
 		(pts
-			(xy 125.73 179.07) (xy 102.87 179.07)
+			(xy 130.81 179.07) (xy 102.87 179.07)
 		)
 		(stroke
 			(width 0)
@@ -3966,7 +3986,7 @@
 	)
 	(wire
 		(pts
-			(xy 127 171.45) (xy 123.19 171.45)
+			(xy 132.08 171.45) (xy 128.27 171.45)
 		)
 		(stroke
 			(width 0)
@@ -4036,7 +4056,7 @@
 	)
 	(wire
 		(pts
-			(xy 127 173.99) (xy 125.73 173.99)
+			(xy 132.08 173.99) (xy 130.81 173.99)
 		)
 		(stroke
 			(width 0)
@@ -4216,7 +4236,7 @@
 	)
 	(wire
 		(pts
-			(xy 125.73 114.3) (xy 63.5 114.3)
+			(xy 130.81 114.3) (xy 63.5 114.3)
 		)
 		(stroke
 			(width 0)
@@ -4224,7 +4244,7 @@
 		)
 		(uuid "fe86cd17-7cd1-45df-bad3-85133ecbdef4")
 	)
-	(label "EYE2-"
+	(label "LEFT-"
 		(at 80.01 63.5 0)
 		(effects
 			(font
@@ -4234,7 +4254,7 @@
 		)
 		(uuid "0668fd78-aba6-4fc1-b4a1-d354ec6a75a1")
 	)
-	(label "EYE2+"
+	(label "LEFT+"
 		(at 80.01 60.96 0)
 		(effects
 			(font
@@ -4244,7 +4264,7 @@
 		)
 		(uuid "0db5dba0-6058-4d46-832c-9facf559a337")
 	)
-	(label "EYE2+"
+	(label "LEFT+"
 		(at 44.45 166.37 0)
 		(effects
 			(font
@@ -4264,7 +4284,7 @@
 		)
 		(uuid "1ac4839d-9845-405d-a11b-820dd0930814")
 	)
-	(label "EYE2-"
+	(label "LEFT-"
 		(at 44.45 171.45 0)
 		(effects
 			(font
@@ -4274,7 +4294,7 @@
 		)
 		(uuid "215b30da-5d7d-4455-b733-53517d5c5e6a")
 	)
-	(label "EYE1-"
+	(label "RIGHT-"
 		(at 80.01 68.58 0)
 		(effects
 			(font
@@ -4294,7 +4314,7 @@
 		)
 		(uuid "2af891a9-c8b2-4487-9e6c-7c9a29d95bda")
 	)
-	(label "EYE1+"
+	(label "RIGHT+"
 		(at 45.72 127 0)
 		(effects
 			(font
@@ -4314,7 +4334,7 @@
 		)
 		(uuid "5510dd26-a9c0-42c0-b96d-f6d35a80d676")
 	)
-	(label "EYE1-"
+	(label "RIGHT-"
 		(at 45.72 132.08 0)
 		(effects
 			(font
@@ -4334,7 +4354,17 @@
 		)
 		(uuid "8b0add07-1d2e-483d-b91d-0b562defbc1d")
 	)
-	(label "EYE1+"
+	(label "左目"
+		(at 120.65 168.91 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ac679307-480d-4a2e-b534-c597938f530e")
+	)
+	(label "RIGHT+"
 		(at 80.01 66.04 0)
 		(effects
 			(font
@@ -4363,6 +4393,16 @@
 			(justify left bottom)
 		)
 		(uuid "f5bc4de7-8f32-4bc0-a81f-c469c138080f")
+	)
+	(label "右目"
+		(at 120.65 129.54 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "fcb14ac7-1e92-4a20-9479-1707108b84f0")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -7220,7 +7260,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Audio:AudioJack3")
-		(at 133.35 129.54 0)
+		(at 138.43 129.54 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -7229,7 +7269,7 @@
 		(dnp no)
 		(uuid "9eae83c4-f64d-4b8d-91f5-1ab0c9add9d0")
 		(property "Reference" "J1"
-			(at 140.97 131.4451 0)
+			(at 146.05 131.4451 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7238,7 +7278,7 @@
 			)
 		)
 		(property "Value" "スコープ１"
-			(at 140.97 128.9051 0)
+			(at 146.05 128.9051 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7247,7 +7287,7 @@
 			)
 		)
 		(property "Footprint" "Connector_Audio:Jack_3.5mm_CUI_SJ1-3513N_Horizontal"
-			(at 133.35 129.54 0)
+			(at 138.43 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7256,7 +7296,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 133.35 129.54 0)
+			(at 138.43 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7265,7 +7305,7 @@
 			)
 		)
 		(property "Description" "Audio Jack, 3 Poles (Stereo / TRS)"
-			(at 133.35 129.54 0)
+			(at 138.43 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7293,7 +7333,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Audio:AudioJack3")
-		(at 132.08 171.45 180)
+		(at 137.16 171.45 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7302,7 +7342,7 @@
 		(fields_autoplaced yes)
 		(uuid "a23597cf-3809-4c9b-96e6-8ae497231a39")
 		(property "Reference" "J2"
-			(at 139.7 169.5449 0)
+			(at 144.78 169.5449 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7311,7 +7351,7 @@
 			)
 		)
 		(property "Value" "スコープ２"
-			(at 139.7 172.0849 0)
+			(at 144.78 172.0849 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7320,7 +7360,7 @@
 			)
 		)
 		(property "Footprint" "Connector_Audio:Jack_3.5mm_CUI_SJ1-3513N_Horizontal"
-			(at 132.08 171.45 0)
+			(at 137.16 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7329,7 +7369,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 132.08 171.45 0)
+			(at 137.16 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7338,7 +7378,7 @@
 			)
 		)
 		(property "Description" "Audio Jack, 3 Poles (Stereo / TRS)"
-			(at 132.08 171.45 0)
+			(at 137.16 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)

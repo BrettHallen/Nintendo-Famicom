@@ -65,7 +65,7 @@
 			(pin output line
 				(at -12.7 -2.54 0)
 				(length 2.54)
-				(name "EYE2+"
+				(name "L+"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -83,7 +83,7 @@
 			(pin output line
 				(at -12.7 -5.08 0)
 				(length 2.54)
-				(name "EYE2-"
+				(name "L-"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -101,7 +101,7 @@
 			(pin output line
 				(at -12.7 -7.62 0)
 				(length 2.54)
-				(name "EYE1+"
+				(name "R+"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -119,7 +119,7 @@
 			(pin output line
 				(at -12.7 -10.16 0)
 				(length 2.54)
-				(name "EYE1-"
+				(name "R-"
 					(effects
 						(font
 							(size 1.27 1.27)
