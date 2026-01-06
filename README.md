@@ -28,3 +28,8 @@ Designing cartridge with 8KB RAM.<br>
 
 ## [3D System (HVC-032)](/3D_System_HVC-032)
 Photos & schematic for the controller unit HVC-032.<br>
+
+## [Communication Controller (HVC-051)](/Communication_Controller_HVC-051)
+Japanese: 通信コントローラ<br>
+Photos & schematic for the Famicom Network controller.<br>
+
