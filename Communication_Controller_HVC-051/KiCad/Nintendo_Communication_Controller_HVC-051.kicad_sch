@@ -92,7 +92,7 @@
 				(pin output line
 					(at -10.16 -5.08 0)
 					(length 2.54)
-					(name "Q_{H}"
+					(name "SER_{OUT}"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -269,10 +269,10 @@
 						)
 					)
 				)
-				(pin output line
+				(pin input line
 					(at 10.16 -12.7 180)
 					(length 2.54)
-					(name "SER"
+					(name "SER_{IN}"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1083,8 +1083,8 @@
 	)
 	(text_box "Mitsumi W545 is a custom 8-bit parallel-in serial-out (PISO) shift register.  \nIt is perhaps similar to the 74xx165 (?)."
 		(exclude_from_sim no)
-		(at 165.1 50.8 0)
-		(size 46.99 7.62)
+		(at 123.19 113.03 0)
+		(size 72.39 11.43)
 		(margins 0.9525 0.9525 0.9525 0.9525)
 		(stroke
 			(width 0)
@@ -1095,7 +1095,7 @@
 		)
 		(effects
 			(font
-				(size 1.27 1.27)
+				(size 2 2)
 			)
 			(justify left top)
 		)
@@ -1104,7 +1104,7 @@
 	(text_box "通信終了 = communication end\n前ページ = previous page (SELECT)\n次ページ = next page (START)\n実行 = execute/run (A)\n目次 = index/menu (B)\n通信コントローラ = communication controller"
 		(exclude_from_sim no)
 		(at 20.32 19.05 0)
-		(size 43.18 13.97)
+		(size 67.31 21.59)
 		(margins 0.9525 0.9525 0.9525 0.9525)
 		(stroke
 			(width 0)
@@ -1115,7 +1115,7 @@
 		)
 		(effects
 			(font
-				(size 1.27 1.27)
+				(size 2 2)
 			)
 			(justify left top)
 		)
@@ -1271,16 +1271,6 @@
 	)
 	(wire
 		(pts
-			(xy 256.54 43.18) (xy 246.38 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "19d2ab9a-ea8f-44f6-90e0-ed444b8ed6b5")
-	)
-	(wire
-		(pts
 			(xy 82.55 121.92) (xy 82.55 127)
 		)
 		(stroke
@@ -1351,16 +1341,6 @@
 	)
 	(wire
 		(pts
-			(xy 256.54 45.72) (xy 246.38 45.72)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4caa2e8b-29a2-4e83-bb09-0317fb5d4fc2")
-	)
-	(wire
-		(pts
 			(xy 82.55 137.16) (xy 82.55 142.24)
 		)
 		(stroke
@@ -1421,26 +1401,6 @@
 	)
 	(wire
 		(pts
-			(xy 256.54 48.26) (xy 246.38 48.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "89765546-56b4-430b-873a-9f8e8d3a3f8a")
-	)
-	(wire
-		(pts
-			(xy 256.54 53.34) (xy 246.38 53.34)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8992c3c8-f3b6-4646-b4f6-1d7ee1479596")
-	)
-	(wire
-		(pts
 			(xy 82.55 116.84) (xy 82.55 121.92)
 		)
 		(stroke
@@ -1471,6 +1431,16 @@
 	)
 	(wire
 		(pts
+			(xy 190.5 69.85) (xy 189.23 69.85)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a4975988-25e3-4dc7-8bcd-24591f32a241")
+	)
+	(wire
+		(pts
 			(xy 82.55 55.88) (xy 82.55 60.96)
 		)
 		(stroke
@@ -1488,6 +1458,16 @@
 			(type default)
 		)
 		(uuid "b35715a0-4cd8-4c7e-a44a-27829085e052")
+	)
+	(wire
+		(pts
+			(xy 246.38 43.18) (xy 256.54 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b4123e80-21c7-4920-b35e-2366f31732bd")
 	)
 	(wire
 		(pts
@@ -1511,16 +1491,6 @@
 	)
 	(wire
 		(pts
-			(xy 256.54 50.8) (xy 246.38 50.8)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c6e5ad58-b707-400e-b068-94ad5c631c2a")
-	)
-	(wire
-		(pts
 			(xy 82.55 106.68) (xy 82.55 111.76)
 		)
 		(stroke
@@ -1528,6 +1498,16 @@
 			(type default)
 		)
 		(uuid "c82fe226-e717-402b-9413-fa6561185834")
+	)
+	(wire
+		(pts
+			(xy 246.38 53.34) (xy 256.54 53.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c9e54c6a-2d1b-4c6d-be50-a41e46e83e0b")
 	)
 	(wire
 		(pts
@@ -1561,6 +1541,16 @@
 	)
 	(wire
 		(pts
+			(xy 243.84 91.44) (xy 242.57 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cd9c8551-cdcc-4871-a1c9-6e8dd23880e4")
+	)
+	(wire
+		(pts
 			(xy 82.55 167.64) (xy 82.55 179.07)
 		)
 		(stroke
@@ -1568,6 +1558,16 @@
 			(type default)
 		)
 		(uuid "da3a8fd8-040b-4b0c-af98-c39a5374217f")
+	)
+	(wire
+		(pts
+			(xy 144.78 38.1) (xy 143.51 38.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "df244415-ff0b-41c5-b188-63e79624c4a5")
 	)
 	(wire
 		(pts
@@ -1881,7 +1881,7 @@
 		)
 	)
 	(label "JOY1 ~{D1}"
-		(at 255.27 50.8 180)
+		(at 256.54 50.8 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2091,7 +2091,7 @@
 		(uuid "2f9b1e24-1d91-4bfc-b8cb-b1e738404670")
 	)
 	(label "+5V"
-		(at 255.27 43.18 180)
+		(at 256.54 43.18 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2111,7 +2111,7 @@
 		(uuid "3deb067c-b2d1-4db6-983d-f7661e83b15b")
 	)
 	(label "JOY1 ~{OE}"
-		(at 255.27 45.72 180)
+		(at 256.54 45.72 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2171,7 +2171,7 @@
 		(uuid "540f8685-9423-49bb-a63d-c7e4268e9214")
 	)
 	(label "GND"
-		(at 255.27 53.34 180)
+		(at 256.54 53.34 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2181,7 +2181,7 @@
 		(uuid "56ac1c9a-ec05-4ecd-8423-c3479759c41a")
 	)
 	(label "OUT0"
-		(at 255.27 48.26 180)
+		(at 256.54 48.26 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2964,7 +2964,7 @@
 	)
 	(symbol
 		(lib_id "power:+5V")
-		(at 242.57 91.44 0)
+		(at 243.84 91.44 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2973,7 +2973,7 @@
 		(fields_autoplaced yes)
 		(uuid "1fc2063d-8854-4ec1-90a0-53059462ce7e")
 		(property "Reference" "#PWR04"
-			(at 242.57 95.25 0)
+			(at 243.84 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2982,7 +2982,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 242.57 86.36 0)
+			(at 243.84 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2990,7 +2990,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 242.57 91.44 0)
+			(at 243.84 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2999,7 +2999,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 242.57 91.44 0)
+			(at 243.84 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3008,7 +3008,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 242.57 91.44 0)
+			(at 243.84 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3609,7 +3609,7 @@
 	)
 	(symbol
 		(lib_id "power:+5V")
-		(at 143.51 38.1 0)
+		(at 144.78 38.1 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3618,7 +3618,7 @@
 		(fields_autoplaced yes)
 		(uuid "69dffb62-516c-43cd-8b13-cf15bc39b363")
 		(property "Reference" "#PWR06"
-			(at 143.51 41.91 0)
+			(at 144.78 41.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3627,7 +3627,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 143.51 33.02 0)
+			(at 144.78 33.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3635,7 +3635,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 143.51 38.1 0)
+			(at 144.78 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3644,7 +3644,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 143.51 38.1 0)
+			(at 144.78 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3653,7 +3653,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 143.51 38.1 0)
+			(at 144.78 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4125,7 +4125,7 @@
 	)
 	(symbol
 		(lib_id "power:+5V")
-		(at 189.23 69.85 0)
+		(at 190.5 69.85 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4134,7 +4134,7 @@
 		(fields_autoplaced yes)
 		(uuid "92430168-9799-43f1-ab00-a457faceb00f")
 		(property "Reference" "#PWR05"
-			(at 189.23 73.66 0)
+			(at 190.5 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4143,7 +4143,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 189.23 64.77 0)
+			(at 190.5 64.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4151,7 +4151,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 189.23 69.85 0)
+			(at 190.5 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4160,7 +4160,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 189.23 69.85 0)
+			(at 190.5 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4169,7 +4169,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 189.23 69.85 0)
+			(at 190.5 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)

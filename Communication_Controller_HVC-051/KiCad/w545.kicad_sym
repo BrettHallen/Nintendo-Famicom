@@ -83,7 +83,7 @@
 			(pin output line
 				(at -10.16 -5.08 0)
 				(length 2.54)
-				(name "Q_{H}"
+				(name "SER_{OUT}"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -260,10 +260,10 @@
 					)
 				)
 			)
-			(pin output line
+			(pin input line
 				(at 10.16 -12.7 180)
 				(length 2.54)
-				(name "SER"
+				(name "SER_{IN}"
 					(effects
 						(font
 							(size 1.27 1.27)
