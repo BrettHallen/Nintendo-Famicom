@@ -1,0 +1,91 @@
+// Instructions for patching Family BASIC v3.0 to 8KB
+// This is intended to convert a cartridge, not create Disk BASIC
+// Modified by Brett Hallen, Jan 2026 (corrections, comments, offsets)
+// Very good & most excellent resources:
+// https://github.com/NipponNoraneko/FC-DiskBASIC
+// https://github.com/micahcowan/fbdasm
+
+// Constants used in the disassembly:
+//   bgGetRam        .eq     $6c00  {addr/1024}      ; region to save bg data with BGGET
+//   memoryTop       .eq     $6fff                   ; What FRETOP is set to by default
+
+////////////////////////////////////////////
+// Increase RAM limit from $6FFF to $7FFF //
+////////////////////////////////////////////
+// PATCH0
+// lda     #>memoryTop
+06A4: 6F -> 7F
+
+// PATCH1
+// cmp     #$70                    ;arg >= #$7000?
+17D8: 70 -> 80
+
+// PATCH2
+// @noHiDst        lda     #(>memoryTop)+1
+2DC9: 70 -> 80
+
+// PATCH3
+// cmp     #>bgGetRam              ;is there room after program for BG data?
+31BE: 6C -> 7C     
+
+// PATCH4
+// lda     #>bgGetRam
+31CB: 6C -> 7C
+
+// PATCH5
+// lda     #>bgGetRam
+320C: 6C -> 7C
+
+/////////////////
+// RESET PATCH //
+/////////////////
+// jsr     InitPpuApu
+00D4: 
+
+///////////////////////////////////////////
+// Token Patch                           //
+///////////////////////////////////////////
+// TokenizeKeyword lda     #<tbl_KeywordTokens ($CCAB in memory, $4CAB in ROM)
+13E7: AB -> 
+
+// lda     #>tbl_KeywordTokens
+13EB: CC ->
+
+// lda     #<tbl_KeywordTokens     ;set zpTokTblScan to the start of the tokens table
+14E1: AB -> 
+
+// lda     #>tbl_KeywordTokens
+14E5: CC ->
+
+
+	TOKEN_PATCH0:	load = SIDE1A, start = $219e+$13e7, type = overwrite;
+	TOKEN_PATCH1:	load = SIDE1A, start = $219e+$13eb, type = overwrite;
+	TOKEN_PATCH2:	load = SIDE1A, start = $219e+$14e1, type = overwrite;
+	TOKEN_PATCH3:	load = SIDE1A, start = $219e+$14e5, type = overwrite;
+
+	FUNCADDR_PATCH4:	load = SIDE1A, start = $219e+$0433, type = overwrite;
+	FUNCADDR_PATCH5:	load = SIDE1A, start = $219e+$0438, type = overwrite;
+	FUNCADDR_PATCH6:	load = SIDE1A, start = $219e+$1b39, type = overwrite;
+	FUNCADDR_PATCH7:	load = SIDE1A, start = $219e+$1b3e, type = overwrite;
+
+	RESET_PATCH:	load = SIDE1A, start = $219e+$00d4, type = overwrite;
+	#GAME_PATCH:		load = SIDE1A, start = $219e+$2d58, type = overwrite;
+	FDS_PATCH:		load = SIDE1A, start = $219e+$5000, type = overwrite;
+
+// Reset Patch 0 
+// JSR $CD94 removed with NOPs
+　　0427-0429: 20 94 CD -> EA EA EA
+
+// Reset Patch 1
+　　0436-0456: 20 7A EC A9 0F 8D 15 40 A9 4C
+　　           85 ED A9 A7 85 EE A9 CD 85 EF A5 60 C9 01 D0 0A
+　　           A5 10 29 7F 20 7A EC 4C 00 80
+　　　　　　　　　　　　↓
+　　           8D 00 20 85 10 A9 0F 8D 15 40
+　　           A9 FF 8D 00 01 8D 01 01 A9 35 8D 02 01 A9 53 8D
+　　           03 01 A9 26 8D 25 40 4C AD 80
+
+// Vectors patch
+　　5FF0-5FFF: A5 BF 18 69 01 85 C0 A9 29 85 00 A9 FF 85 01 20
+　　　　　　　　　　　　↓
+　　           58 5C 60 00 ED 00 ED 00 ED 00 ED 00 00 C4 F0 DF
