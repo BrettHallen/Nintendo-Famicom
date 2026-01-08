@@ -1,0 +1,156 @@
+### 027 Family Computer Disk BASIC
+### From http://cmpslv3.stars.ne.jp/Konjo/027/027.htm
+
+Using a binary editor to create an FDS image for Disk BASIC.  
+It's that thing that appeared in the *Famicom Modification Manual VOL. 2*.  
+Even though it's already been turned into an image,  
+I'm noting it down here as a memo.
+
+So, here's what you'll need:
+
+- Any suitable binary editor  
+- An FDS image from any commercial software  
+- The ROM image of Family BASIC V2.1A  
+- An emulator that supports the Disk System and keyboard  
+
+First, prepare the image.
+
+**FDS header (single-sided disk)**  
+0000: 46 44 53 1A 01 00 00 00 00 00 00 00 00 00 00 00  
+
+**Commercial software**  
+Block code $01  
+0010: 01 2A 4E 49 4E 54 45 4E 44 4F 2D 48 56 43 2A 00  
+0020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  
+0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  
+0040: 00 00 00 00 00 00 00 00  
+
+Block code $02 (file registration)  
+0048: 02 03  
+
+**<File 00 KYODAKU>**  
+Block codes $03, $04 (license data)  
+Leave the license file from 004A013A unchanged.  
+
+**<File 01 CHR>**  
+Block code $03  
+013B: 03 01 00 43 48 52 00 00 00 00 00 00 00 00 20 01  
+
+Block code $04  
+014B: 04  
+Then insert the Family BASIC CHR (8K) data from 014C214B.  
+
+**<File 02 PRG>**  
+Block code $03  
+214C: 03 02 00 50 52 47 00 00 00 00 00 00 80 00 60 00  
+
+Block code $04 (BASIC program)  
+215C: 04  
+
+Here, you'll insert the Family BASIC PRG, but first convert it for disk use.  
+Take the 32KB PRG portion of Family BASIC and, using a binary editor, delete $6000$7FFF.  
+This section contains the opening, message board, fortune-telling, etc.  
+$0000$5FFF becomes the main BASIC body.  
+
+Make the following modifications:  
+
+- 00BC-00BE: 20 31 81  4C F0 80  
+- 00DB: 70  60  
+- 00E0: 70  60  
+- 00E7: 70  60  
+- 00EC: 70  60  
+- 00EE-00EF: AD 80  AF B5  
+- 00FD: 70  60  
+- 0104: 70  60  
+- 010B: 70  60  
+- 0110: 70  60  
+- 0118: 70  60  
+- 0210: 70  60  
+- 0213: 70  60  
+- 0220: 58  EA  
+- 038D: 70  60  
+- 0390: 70  60  
+- 0393: 70  60  
+- 03A5: 70  60  
+- 0570: 77  7F  
+- 125A: 78  80  
+- 4151-4156: 53 59 53 45 4D  42 47 54 4F 4F 4C  
+- 4367: 41  44  
+- 4427-4429: 20 94 CD  EA EA EA  
+
+- 4436-4456: 20 7A EC A9 0F 8D 15 40 A9 4C 85 ED A9 A7 85 EE A9 CD 85 EF A5 60 C9 01 D0 0A A5 10 29 7F 20 7A EC 4C 00 80  
+    
+  8D 00 20 85 10 A9 0F 8D 15 40 A9 FF 8D 00 01 8D 01 01 A9 35 8D 02 01 A9 53 8D 03 01 A9 26 8D 25 40 4C AD 80  
+
+- 5FF0-5FFF: A5 BF 18 69 01 85 C0 A9 29 85 00 A9 FF 85 01 20  
+    
+  58 5C 60 00 ED 00 ED 00 ED 00 ED 00 00 C4 F0 DF  
+
+Insert the modified BASIC from 215D815C.  
+
+Fill the remaining 815DFFEB with $FF.  
+
+As an example, using the single-sided game Super Mario FDS.  
+The content of block $01 is usually slightly different,  
+and since it's one you dumped yourself, the rewrite software may vary.  
+What you need is the "*NINTENDO-HVC*" in block $01 and the cold start.  
+Block $02 registers 3 files: license, CHR, PRG.  
+My Super Mario copy shows it was rewritten 5 times, dated May 25, 1987 (Showa 62).  
+
+Next, insert the CHR file section.  
+Keep $0000$013A (up to license data) and delete the rest.  
+Add the following from $013B$014A:  
+
+013B: 03 01 00 43 48 52 00 00 00 00 00 00 00 00 20 01  
+
+Finally, set 014B: 04  
+This writes the marks for CHR blocks $03 and $04.  
+
+Copy the 8KB CHR data from Family BASIC V2.1A to $014C$214B.  
+
+Write PRG block $03 at $214C$215B:  
+
+214C: 03 02 00 50 52 47 00 00 00 00 00 00 80 00 60 00  
+
+Finally, set 215C: 04, then save the incomplete image for now.  
+This writes the marks for PRG blocks $03 and $04.  
+
+In a new binary editor session,  
+take the main Family BASIC V2.1A PRG data,  
+delete the $6000$7FFF portion of $0000$7FFF,  
+apply the changes above,  
+
+Load the previously saved incomplete image,  
+copy the modified data to $215D$815C,  
+Then fill $815D$FFEB with $FF.  
+
+After that, if it boots in the emulator, it's complete.  
+The license screen will appear, but it's unlicensed.  
+If it's too strict, it could violate antitrust laws...  
+But since this is for personal use, it doesn't matter.  
+If you're selling self-made software, you should avoid showing the license screen,  
+but that's not relevant here.  
+It should show "8216 BYTES FREE".  
+By the way, the CHR can also be rewritten.  
+Creation successful.  
+
+This originally came from an article in *Backup Exploitation Research 8*,  
+using PC-6601SR + hard drive.  
+Later, in *Famicom Modification Manual Vol. 2*,  
+they used Tonkachi Editor to create a Disk BASIC with 8KB free area.  
+Program saving is via CMT (cassette).  
+That makes you want disk SAVE/LOAD.  
+However, due to differences between disk work area and BASIC work area,  
+it's not straightforward.  
+In *Famicom Modification Manual Vol. 3*,  
+SAVE is somewhat possible, but that "somewhat" is tricky and quite bothersome.  
+There's something similar called I2 DISK BASIC,  
+which also modifies Family BASIC V2.1A.  
+That might be the best option.  
+The problem is it requires the original Famicom and a generator.  
+
+Even using this Disk BASIC has various inconveniences.  
+At least if there was a RAM file...  
+But it's too late for that now.  
+It's probably better to use a ROM cartridge + expansion hardware,  
+and such things already exist.  
