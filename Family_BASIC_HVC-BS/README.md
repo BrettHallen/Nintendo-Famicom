@@ -50,7 +50,7 @@ PATCH5: lda #>bgGetRam
 
 I am working on a Python script to make this patching of the binary ROM simple:<br>
 ```
-% python3 fb_8kb_patch2.py Family_BASIC_v30_PRG.BIN
+% python3 fb_8kb_patch.py Family_BASIC_v30_PRG.BIN
 
 #############################################
 # Brett's Nintendo Family BASIC ROM patcher #
