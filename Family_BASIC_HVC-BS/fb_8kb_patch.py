@@ -19,7 +19,7 @@ import argparse
 ###############################################
 KNOWN_CRCS = {
     # "FBv20A": (0x????????, 0x????????),  # Need to dump the ROMs
-    "FBv21A": (0xF7D29720, 0x00000000),    # Patched CRC to be determined
+    "FBv21A": (0xF7D29720, 0xE3E9B30B),
     "FBv30":  (0x3AAEED3F, 0xB66688F1),
 }
 
@@ -34,9 +34,25 @@ PATCHES = {
         (0x31BE, 0x6C, 0x7C), # cmp #>bgGetRam
         (0x31CB, 0x6C, 0x7C), # lda #>bgGetRam
         (0x320C, 0x6C, 0x7C), # lda #>bgGetRam
-    ],
-    # "FBv20A": [...],
-    # "FBv21A": [...],
+    ],                      
+    # "FBv20A": [...],      
+    "FBv21A": [             
+        (0x40DB, 0x70, 0x60),
+        (0x40E0, 0x70, 0x60),
+        (0x40E7, 0x70, 0x60),
+        (0x40EC, 0x70, 0x60),
+        (0x40FD, 0x70, 0x60),
+        (0x4104, 0x70, 0x60),
+        (0x410B, 0x70, 0x60),
+        (0x4110, 0x70, 0x60),
+        (0x4118, 0x70, 0x60),
+        (0x4210, 0x70, 0x60),
+        (0x4213, 0x70, 0x60),
+        (0x438D, 0x70, 0x60),
+        (0x4390, 0x70, 0x60),
+        (0x4393, 0x70, 0x60),
+        (0x43A5, 0x70, 0x60)
+    ]                      
 }
 
 # Base friendly names (unpatched)
@@ -95,6 +111,7 @@ def main():
     print("\n#############################################")
     print("# Brett's Nintendo Family BASIC ROM patcher #")
     print("# for 8KB RAM Support (Jan 2026)            #")
+    print("# Work in progress, 8/JAN/2026              #")
     print("#############################################\n")
     
     # Calculate input CRC32
