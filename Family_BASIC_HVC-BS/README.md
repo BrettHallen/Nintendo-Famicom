@@ -6,13 +6,13 @@ This is the original version for the Famicom.<br>
 - RAM: 2KB (Fujitsu MB8416A-15-SK)<br>
 
 ## Version 2.1A
-This is a bugfix version that was available if you returned your V2.0A cartridge.<br>
+This is a bugfix version that was available if you returned your v2.0A cartridge.<br>
 - PRG: one 32KB (256Kbit) ROM (Fujitsu MB83256) labelled "HVC-FB1-2W"
 - CHR: one 8KB (64Kbit) ROM (RP2D70 0032) labelled "HVC-FB1-0C"
 - RAM: 2KB (Fujitsu MB8416A-16L-SK)
 
 ## Version 3.0
-Improved BASIC with double the RAM of V2.<br>
+Improved BASIC with double the RAM of v2.<br>
 - PRG: one 32KB (256Kbit) ROM (Toshiba TC53257P-1613) labelled "HVC-VT-0W"
 - CHR: one 8KB (64Kbit) ROM (M3864-31) labelled "HVC-FB1-0C"
 - RAM: 4KB (Toshiba TC5533P-B)
@@ -24,7 +24,7 @@ There is a [information available](https://github.com/NipponNoraneko/FC-DiskBASI
 
 This [disassembly of the v3.0 ROM](https://github.com/micahcowan/fbdasm) is invaluable.<br>
 
-So far it looks like these are the required patches in the v3.0 ROM to increase the top of RAM from 0x6FFF (4KByte) to 0x7FFF (8KByte) - working on verifying the others:<br>
+So far it looks like these are the required patches in the v3.0 ROM to increase the top of RAM from 0x6FFF (4KB) to 0x7FFF (8KB) - working on verifying the others:<br>
 ```
    bgGetRam  .eq $6c00  {addr/1024} ; region to save bg data with BGGET
    memoryTop .eq $6fff              ; What FRETOP is set to by default
