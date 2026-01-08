@@ -20,39 +20,40 @@ import argparse
 KNOWN_CRCS = {
     # "FBv20A": (0x????????, 0x????????),  # Need to dump the ROMs
     "FBv21A": (0xF7D29720, 0xE3E9B30B),
-    "FBv30":  (0x3AAEED3F, 0xB66688F1),
+    "FBv30":  (0x3AAEED3F, 0xE6EC08AC),
 }
 
 #####################################################################
-# Patches: offset (hex), original_byte (for verification), new_byte #
+# Patches: offset (hex), original_byte, new_byte, [optional description] #
 #####################################################################
 PATCHES = {
     "FBv30": [
-        (0x06A4, 0x6F, 0x7F), # lda #>memoryTop
-        (0x17D8, 0x70, 0x80), # cmp #$70
-        (0x2DC9, 0x70, 0x80), # lda #(>memoryTop)+1
-        (0x31BE, 0x6C, 0x7C), # cmp #>bgGetRam
-        (0x31CB, 0x6C, 0x7C), # lda #>bgGetRam
-        (0x320C, 0x6C, 0x7C), # lda #>bgGetRam
-    ],                      
-    # "FBv20A": [...],      
-    "FBv21A": [             
-        (0x40DB, 0x70, 0x60),
-        (0x40E0, 0x70, 0x60),
-        (0x40E7, 0x70, 0x60),
-        (0x40EC, 0x70, 0x60),
-        (0x40FD, 0x70, 0x60),
-        (0x4104, 0x70, 0x60),
-        (0x410B, 0x70, 0x60),
-        (0x4110, 0x70, 0x60),
-        (0x4118, 0x70, 0x60),
-        (0x4210, 0x70, 0x60),
-        (0x4213, 0x70, 0x60),
-        (0x438D, 0x70, 0x60),
-        (0x4390, 0x70, 0x60),
-        (0x4393, 0x70, 0x60),
-        (0x43A5, 0x70, 0x60)
-    ]                      
+        (0x06A4, 0x6F, 0x7F, "8KB RAM support"), # lda #>memoryTop
+        (0x17D8, 0x70, 0x80, "8KB RAM support"), # cmp #$70
+        (0x2DC9, 0x70, 0x80, "8KB RAM support"), # lda #(>memoryTop)+1
+        (0x31BE, 0x6C, 0x7C, "8KB RAM support"), # cmp #>bgGetRam
+        (0x31CB, 0x6C, 0x7C, "8KB RAM support"), # lda #>bgGetRam
+        (0x320C, 0x6C, 0x7C, "8KB RAM support"), # lda #>bgGetRam
+        (0x132E, 0xA0, 0xA9, "REM bugfix"),       # ldy #$00 -> lda #$00 (Micah's REM bugfix)
+        (0x4F89, 0x30, 0x31, "Version change to v3.1"),
+    ],
+    "FBv21A": [
+        (0x40DB, 0x70, 0x60, ""),
+        (0x40E0, 0x70, 0x60, ""),
+        (0x40E7, 0x70, 0x60, ""),
+        (0x40EC, 0x70, 0x60, ""),
+        (0x40FD, 0x70, 0x60, ""),
+        (0x4104, 0x70, 0x60, ""),
+        (0x410B, 0x70, 0x60, ""),
+        (0x4110, 0x70, 0x60, ""),
+        (0x4118, 0x70, 0x60, ""),
+        (0x4210, 0x70, 0x60, ""),
+        (0x4213, 0x70, 0x60, ""),
+        (0x438D, 0x70, 0x60, ""),
+        (0x4390, 0x70, 0x60, ""),
+        (0x4393, 0x70, 0x60, ""),
+        (0x43A5, 0x70, 0x60, ""),
+    ],
 }
 
 # Base friendly names (unpatched)
@@ -81,18 +82,28 @@ def calculate_crc32_data(data):
     return crc & 0xFFFFFFFF
 
 def apply_patches(data, patches, version_name):
-    """Apply patches and verify original bytes for safety"""
-    for offset, original, new in patches:
+    """Apply patches with optional description and verify original bytes"""
+    for patch in patches:
+        if len(patch) == 4:
+            offset, original, new, description = patch
+        elif len(patch) == 3:
+            offset, original, new = patch
+            description = ""
+        else:
+            print(f"!! Error: Invalid patch format: {patch}")
+            sys.exit(1)
+
         if offset >= len(data):
             print(f"!! Error: Patch offset 0x{offset:04X} is beyond file end ({len(data)} bytes).")
             sys.exit(1)
-        
+
         current = data[offset]
         if current != original:
             print(f"!! Warning: Byte at 0x{offset:04X} is 0x{current:02X}, expected 0x{original:02X} "
                   f"(for {version_name}). Continuing anyway.")
-        
-        print(f"Patching 0x{offset:04X}: 0x{current:02X} → 0x{new:02X}")
+
+        desc_part = f" ({description})" if description else ""
+        print(f"Patching 0x{offset:04X}: 0x{current:02X} → 0x{new:02X}{desc_part}")
         data[offset] = new
 
 def main():
@@ -101,7 +112,7 @@ def main():
     )
     parser.add_argument("romfile", help="Path to the Family BASIC ROM file")
     parser.add_argument("-o", "--output", help="Custom output filename (optional)")
-    
+
     args = parser.parse_args()
 
     if not os.path.isfile(args.romfile):
@@ -113,12 +124,12 @@ def main():
     print("# for 8KB RAM Support (Jan 2026)            #")
     print("# Work in progress, 8/JAN/2026              #")
     print("#############################################\n")
-    
+
     # Calculate input CRC32
     input_crc = calculate_crc32(args.romfile)
     print(f">> Input ROM checksum: 0x{input_crc:08X}")
 
-    # Find matching version by original or patched CRC
+    # Find matching version
     matched_version = None
     is_already_patched = False
     expected_original = None
@@ -153,18 +164,17 @@ def main():
         if not args.output:
             print(">> No output requested - nothing more to do.\n")
             sys.exit(0)
-        # Allow saving a copy with -o even if already patched
 
     if matched_version not in PATCHES or not PATCHES[matched_version]:
         print("!! No patches defined for this version.\n")
         sys.exit(0)
 
-    # Load and patch (use base name for context during patching)
+    # Load and apply patches
     with open(args.romfile, 'rb') as f:
         data = bytearray(f.read())
 
     print(">> Applying patches:")
-    apply_patches(data, PATCHES[matched_version], base_name)  # Use unpatched name here for accuracy
+    apply_patches(data, PATCHES[matched_version], base_name)
 
     # Generate output filename
     if args.output:
