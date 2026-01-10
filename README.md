@@ -1,5 +1,5 @@
 # Nintendo Famicom
-Information regarding the Nintendo Family Computer (ニンテンドーファミリーコンピュータ) or Famicon.<br>
+Information regarding the Nintendo Family Computer (ニンテンドーファミリーコンピュータ) or Famicom.<br>
 
 ## [Original Schematics](/Archive_Schematics)
 Copy of the schematics from [Archive](https://archive.org/details/fc-factory-cpu-schematic-scan).
@@ -12,6 +12,8 @@ Copy of the schematics from [Archive](https://archive.org/details/fc-factory-cpu
 > Thankfully, though, they were all backed up onto the Wayback Machine & various other sites, and just took a bit of digging to collect.<br>
 
 > I do not know who the original creators of these schematics are, unfortunately.<br>
+
+I'm informed that the schematics were originally drawn by [Enri](http://cmpslv3.stars.ne.jp).<br>
 
 ## [Keyboard (HVC-007)](/Keyboard_HVC-007)
 Redesign of the keyboard used with Family BASIC using KiCad.<br>
