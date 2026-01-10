@@ -5,7 +5,9 @@
 ## [KiCad](/3D_System_HVC-032/KiCad)
 Schematic of the 3DS controller box in KiCad.<br>
 
-The controller uses a custom Sharp IX0043 chip.  Its functionality could perhaps be replacated by an Atmega328.<br>
+The controller uses a custom Sharp IX0043 chip.<br>
+
+Its functionality could perhaps be replacated by an Atmega328.<br>
 
 ## [Logic Analyser](/3D_System_HVC-032/Logic_Analyser)
 Capture of the controller signalling.  You can use the Saleaea Logic 2 software [(free download, no need to have the hardware)](https://saleae.com) to open the .SAL capture file.
