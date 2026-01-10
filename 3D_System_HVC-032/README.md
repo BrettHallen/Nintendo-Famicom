@@ -10,7 +10,9 @@ The controller uses a custom Sharp IX0043 chip.<br>
 Its functionality could perhaps be replacated by an Atmega328.<br>
 
 ## [Logic Analyser](/3D_System_HVC-032/Logic_Analyser)
-Capture of the controller signalling.  You can use the Saleaea Logic 2 software [(free download, no need to have the hardware)](https://saleae.com) to open the .SAL capture file.
+Capture of the controller signalling.  <br>
+
+You can use the Saleaea Logic 2 software [(free download, no need to have the hardware)](https://saleae.com) to open the .SAL capture file.
 
 ## [Home Brew Controller](/3D_System_HVC-032/HOME-brewed_Control_Circuit)
 Controller design from 1993 to use the similar Sega Master System (SMS) 3D glasses on a PC.<br>
