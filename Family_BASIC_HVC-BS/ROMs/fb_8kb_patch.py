@@ -23,6 +23,7 @@ KNOWN_CRCS = {
     # "FBv20A": (0x????????, 0x????????),  # Need to dump the ROMs
     "FBv21A":     (0xF7D29720, 0xE3E9B30B),
     "FBv30":      (0x3AAEED3F, 0xE6EC08AC),
+    "FBv30_merge":(0xB2530AFC, 0xECD87504),
     "FBv30_iNES": (0x667F6EA6, 0x38F4115E),
     "FB_CHR":     (0x11848B93, 0x11848B93)
 }
@@ -32,6 +33,16 @@ KNOWN_CRCS = {
 ########################################################################
 PATCHES = {
     "FBv30": [
+        (0x06A4, 0x6F, 0x7F, "8KB RAM support"),        # lda #>memoryTop
+        (0x17D8, 0x70, 0x80, "8KB RAM support"),        # cmp #$70
+        (0x2DC9, 0x70, 0x80, "8KB RAM support"),        # lda #(>memoryTop)+1
+        (0x31BE, 0x6C, 0x7C, "8KB RAM support"),        # cmp #>bgGetRam
+        (0x31CB, 0x6C, 0x7C, "8KB RAM support"),        # lda #>bgGetRam
+        (0x320C, 0x6C, 0x7C, "8KB RAM support"),        # lda #>bgGetRam
+        (0x132E, 0xA0, 0xA9, "REM bugfix"),             # ldy #$00 -> lda #$00 (Micah's REM bugfix)
+        (0x4F89, 0x30, 0x31, "Version change to v3.1")
+    ],
+    "FBv30_merge": [
         (0x06A4, 0x6F, 0x7F, "8KB RAM support"),        # lda #>memoryTop
         (0x17D8, 0x70, 0x80, "8KB RAM support"),        # cmp #$70
         (0x2DC9, 0x70, 0x80, "8KB RAM support"),        # lda #(>memoryTop)+1
@@ -75,6 +86,7 @@ friendly_names = {
     "FBv20A":     "Family BASIC v2.0A",
     "FBv21A":     "Family BASIC v2.1A",
     "FBv30":      "Family BASIC v3.0",
+    "FBv30_merge":"Family BASIC v3.0 (PRG+CHR)",
     "FBv30_iNES": "Family BASIC v3.0 (iNES header)",
     "FB_CHR":     "Family BASIC CHR ROM"
 }
