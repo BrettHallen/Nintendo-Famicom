@@ -1,6 +1,11 @@
 # Nintendo Famicom Family BASIC
-## Version 2.0A
+
+## Version 1.0
 This is the original version for the Famicom.<br>
+
+I don't know much about this but I know [Mr Lurch has done a video](https://youtu.be/f1hPLmRiDNo) with this version.<br>
+
+## Version 2.0A
 - PRG: two 16KB (128Kbit) ROMs (RP2D129 0531 and RP2D129 0532) labelled "HVC-FBI-1A" and "HVC-FBI-1B"
 - CHR: one 8KB (64Kbit) ROM (RP2D68 0047) labelled "HVC-FB1-0C"
 - RAM: 2KB (Fujitsu MB8416A-15-SK)<br>
@@ -50,25 +55,28 @@ PATCH5: lda #>bgGetRam
 
 I am working on a Python script to make this patching of the binary ROM simple:<br>
 ```
-% python3 fb_8kb_patch.py Family_BASIC_v30_PRG.BIN
+% python3 fb_8kb_patch.py Family_BASIC_v30_PRG_CHR.NES 
 
 #############################################
 # Brett's Nintendo Family BASIC ROM patcher #
 # for 8KB RAM Support (Jan 2026)            #
+# Work in progress, 12/JAN/2026             #
 #############################################
 
->> Input ROM checksum: 0x3AAEED3F
->> Matches Family BASIC v3.0
+>> Input ROM checksum: 0x55211022
+>> Matches Family BASIC v3.0 (iNES header)
 
 >> Applying patches:
-Patching 0x06A4: 0x6F → 0x7F
-Patching 0x17D8: 0x70 → 0x80
-Patching 0x2DC9: 0x70 → 0x80
-Patching 0x31BE: 0x6C → 0x7C
-Patching 0x31CB: 0x6C → 0x7C
-Patching 0x320C: 0x6C → 0x7C
+Patching 0x06B4: 0x6F → 0x7F (8KB RAM support)
+Patching 0x17E8: 0x70 → 0x80 (8KB RAM support)
+Patching 0x2DD9: 0x70 → 0x80 (8KB RAM support)
+Patching 0x31CE: 0x6C → 0x7C (8KB RAM support)
+Patching 0x31DB: 0x6C → 0x7C (8KB RAM support)
+Patching 0x321C: 0x6C → 0x7C (8KB RAM support)
+Patching 0x133E: 0xA0 → 0xA9 (REM bugfix)
+Patching 0x4F99: 0x30 → 0x31 (Version change to v3.1)
 
->> Patched ROM saved as: Family_BASIC_v30_PRG_8KB_patch.BIN
->> Patched ROM checksum: 0xB66688F1
+>> Patched ROM saved as: Family_BASIC_v30_PRG_CHR_8KB_patch.NES
+>> Patched ROM checksum: 0x0BAA6FDA
 >> SUCCESS: Checksum verified
 ```
