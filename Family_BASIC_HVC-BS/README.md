@@ -80,3 +80,9 @@ Patching 0x4F99: 0x30 → 0x31 (Version change to v3.1)
 >> Patched ROM checksum: 0x0BAA6FDA
 >> SUCCESS: Checksum verified
 ```
+## NES 2.0 Headers
+Required to be prepended to the combined PRG+CHR ROM image to run in an emulator:
+- Family BASIC v2.1 2KB header: 4E 45 53 1A 02 01 03 08 00 00 50 00 00 00 00 23
+- Family BASIC v2.1 8KB header: 4E 45 53 1A 02 01 03 08 00 00 70 00 00 00 00 23 (?)
+- Family BASIC v3.0 4KB header: 4E 45 53 1A 02 01 03 08 00 00 60 00 00 00 00 23
+- Family BASIC v3.0 8KB header: 4E 45 53 1A 02 01 03 08 00 00 70 00 00 00 00 23 (?)
