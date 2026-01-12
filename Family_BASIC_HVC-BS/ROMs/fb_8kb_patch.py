@@ -22,8 +22,8 @@ import argparse
 KNOWN_CRCS = {
     "FBv20A_merge": (0xF7606810, 0x00000000),  # Need to dump the ROMs
     "FBv20A_NES2":  (0x300A6746, 0x00000000),  # Need to dump the ROMs
-    "FBv21A":       (0xF7D29720, 0xE3E9B30B),
-    "FBv21A_merge": (0x2F1440D8, 0x1D523C62),
+    "FBv21A":       (0xDE34526E, 0x00000000),
+    "FBv21A_merge": (0x895037BC, 0x00000000),
     "FBv21A_NES2":  (0xE87E4F8E, 0x78063661),
     "FBv30":        (0x3AAEED3F, 0xE6EC08AC),
     "FBv30_merge":  (0xB2530AFC, 0xECD87504),
