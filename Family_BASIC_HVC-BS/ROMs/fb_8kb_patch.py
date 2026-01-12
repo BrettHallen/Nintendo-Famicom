@@ -14,14 +14,16 @@ import os
 import sys
 import argparse
 
-############################################
-# Expected CRC32 values: original, patched #
-############################################
+################################################
+# Expected CRC32 values: original, patched     #
+# If your CRCs differ when you run the script, #
+# simply patch the actual values below         #
+################################################
 KNOWN_CRCS = {
     # "FBv20A": (0x????????, 0x????????),  # Need to dump the ROMs
     "FBv21A":     (0xF7D29720, 0xE3E9B30B),
     "FBv30":      (0x3AAEED3F, 0xE6EC08AC),
-    "FBv30_iNES": (0x55211022, 0x0BAA6FDA),
+    "FBv30_iNES": (0x667F6EA6, 0x38F4115E),
     "FB_CHR":     (0x11848B93, 0x11848B93)
 }
 
