@@ -29,3 +29,4 @@ Family_BASIC_HVC-BS/KiCad/Family_BASIC_8KB_Cartridge/fp-info-cache
 Family_BASIC_HVC-BS/KiCad/fp-info-cache
 *.BIN
 *.NES
+Family_BASIC_HVC-BS/ROMs/qnesdisasm.py
