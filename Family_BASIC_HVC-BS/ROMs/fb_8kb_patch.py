@@ -20,18 +20,22 @@ import argparse
 # simply patch the actual values below         #
 ################################################
 KNOWN_CRCS = {
-    # "FBv20A": (0x????????, 0x????????),  # Need to dump the ROMs
-    "FBv21A":     (0xF7D29720, 0xE3E9B30B),
-    "FBv30":      (0x3AAEED3F, 0xE6EC08AC),
-    "FBv30_merge":(0xB2530AFC, 0xECD87504),
-    "FBv30_iNES": (0x667F6EA6, 0x38F4115E),
-    "FB_CHR":     (0x11848B93, 0x11848B93)
+    "FBv20A_merge": (0xF7606810, 0x00000000),  # Need to dump the ROMs
+    "FBv20A_NES2":  (0x300A6746, 0x00000000),  # Need to dump the ROMs
+    "FBv21A":       (0xF7D29720, 0xE3E9B30B),
+    "FBv21A_merge": (0x2F1440D8, 0x1D523C62),
+    "FBv21A_NES2":  (0xE87E4F8E, 0x78063661),
+    "FBv30":        (0x3AAEED3F, 0xE6EC08AC),
+    "FBv30_merge":  (0xB2530AFC, 0xECD87504),
+    "FBv30_NES2":   (0x6BA08175, 0x898C7F07),
+    "FB_CHR":       (0x11848B93, 0x11848B93)
 }
 
 ########################################################################
 # Patches: offset (hex), original byte, new byte, optional description #
 ########################################################################
 PATCHES = {
+    # Family BASIC v3.0 PRG only
     "FBv30": [
         (0x06A4, 0x6F, 0x7F, "8KB RAM support"),        # lda #>memoryTop
         (0x17D8, 0x70, 0x80, "8KB RAM support"),        # cmp #$70
@@ -42,6 +46,7 @@ PATCHES = {
         (0x132E, 0xA0, 0xA9, "REM bugfix"),             # ldy #$00 -> lda #$00 (Micah's REM bugfix)
         (0x4F89, 0x30, 0x31, "Version change to v3.1")
     ],
+    # Family BASIC v3.0 PRG+CHR combined
     "FBv30_merge": [
         (0x06A4, 0x6F, 0x7F, "8KB RAM support"),        # lda #>memoryTop
         (0x17D8, 0x70, 0x80, "8KB RAM support"),        # cmp #$70
@@ -52,7 +57,9 @@ PATCHES = {
         (0x132E, 0xA0, 0xA9, "REM bugfix"),             # ldy #$00 -> lda #$00 (Micah's REM bugfix)
         (0x4F89, 0x30, 0x31, "Version change to v3.1")
     ],
-    "FBv30_iNES": [
+    # Family BASIC v3.0 PRG+CHR+NES header
+    "FBv30_NES2": [
+        (0x000A, 0x60, 0x70, "NES 2.0 header 4KB->8KB"),
         (0x06B4, 0x6F, 0x7F, "8KB RAM support"),        # lda #>memoryTop
         (0x17E8, 0x70, 0x80, "8KB RAM support"),        # cmp #$70
         (0x2DD9, 0x70, 0x80, "8KB RAM support"),        # lda #(>memoryTop)+1
@@ -62,33 +69,75 @@ PATCHES = {
         (0x133E, 0xA0, 0xA9, "REM bugfix"),             # ldy #$00 -> lda #$00 (Micah's REM bugfix)
         (0x4F99, 0x30, 0x31, "Version change to v3.1")
     ],
+    # Family BASIC v2.1 PRG only
     "FBv21A": [
-        (0x40DB, 0x70, 0x60, ""),
-        (0x40E0, 0x70, 0x60, ""),
-        (0x40E7, 0x70, 0x60, ""),
-        (0x40EC, 0x70, 0x60, ""),
-        (0x40FD, 0x70, 0x60, ""),
-        (0x4104, 0x70, 0x60, ""),
-        (0x410B, 0x70, 0x60, ""),
-        (0x4110, 0x70, 0x60, ""),
-        (0x4118, 0x70, 0x60, ""),
-        (0x4210, 0x70, 0x60, ""),
-        (0x4213, 0x70, 0x60, ""),
-        (0x438D, 0x70, 0x60, ""),
-        (0x4390, 0x70, 0x60, ""),
-        (0x4393, 0x70, 0x60, ""),
-        (0x43A5, 0x70, 0x60, ""),
+        (0x40DB, 0x70, 0x60, "8KB RAM support"),
+        (0x40E0, 0x70, 0x60, "8KB RAM support"),
+        (0x40E7, 0x70, 0x60, "8KB RAM support"),
+        (0x40EC, 0x70, 0x60, "8KB RAM support"),
+        (0x40FD, 0x70, 0x60, "8KB RAM support"),
+        (0x4104, 0x70, 0x60, "8KB RAM support"),
+        (0x410B, 0x70, 0x60, "8KB RAM support"),
+        (0x4110, 0x70, 0x60, "8KB RAM support"),
+        (0x4118, 0x70, 0x60, "8KB RAM support"),
+        (0x4210, 0x70, 0x60, "8KB RAM support"),
+        (0x4213, 0x70, 0x60, "8KB RAM support"),
+        (0x438D, 0x70, 0x60, "8KB RAM support"),
+        (0x4390, 0x70, 0x60, "8KB RAM support"),
+        (0x4393, 0x70, 0x60, "8KB RAM support"),
+        (0x43A5, 0x70, 0x60, "8KB RAM support"),
+    ],
+    # Family BASIC v2.1 PRG+CHR combined
+    "FBv21A_merge": [
+        (0x40DB, 0x70, 0x60, "8KB RAM support"),
+        (0x40E0, 0x70, 0x60, "8KB RAM support"),
+        (0x40E7, 0x70, 0x60, "8KB RAM support"),
+        (0x40EC, 0x70, 0x60, "8KB RAM support"),
+        (0x40FD, 0x70, 0x60, "8KB RAM support"),
+        (0x4104, 0x70, 0x60, "8KB RAM support"),
+        (0x410B, 0x70, 0x60, "8KB RAM support"),
+        (0x4110, 0x70, 0x60, "8KB RAM support"),
+        (0x4118, 0x70, 0x60, "8KB RAM support"),
+        (0x4210, 0x70, 0x60, "8KB RAM support"),
+        (0x4213, 0x70, 0x60, "8KB RAM support"),
+        (0x438D, 0x70, 0x60, "8KB RAM support"),
+        (0x4390, 0x70, 0x60, "8KB RAM support"),
+        (0x4393, 0x70, 0x60, "8KB RAM support"),
+        (0x43A5, 0x70, 0x60, "8KB RAM support"),
+    ],
+    # Family BASIC v2.1 PRG+CHR+NES header
+    "FBv21A_NES2": [
+        (0x000A, 0x50, 0x70, "NES 2.0 header 2KB->8KB"),
+        (0x40EB, 0x70, 0x60, "8KB RAM support"),
+        (0x40F0, 0x70, 0x60, "8KB RAM support"),
+        (0x40F7, 0x70, 0x60, "8KB RAM support"),
+        (0x40FC, 0x70, 0x60, "8KB RAM support"),
+        (0x410D, 0x70, 0x60, "8KB RAM support"),
+        (0x4114, 0x70, 0x60, "8KB RAM support"),
+        (0x411B, 0x70, 0x60, "8KB RAM support"),
+        (0x4120, 0x70, 0x60, "8KB RAM support"),
+        (0x4128, 0x70, 0x60, "8KB RAM support"),
+        (0x4220, 0x70, 0x60, "8KB RAM support"),
+        (0x4223, 0x70, 0x60, "8KB RAM support"),
+        (0x439D, 0x70, 0x60, "8KB RAM support"),
+        (0x43A0, 0x70, 0x60, "8KB RAM support"),
+        (0x43A3, 0x70, 0x60, "8KB RAM support"),
+        (0x43B5, 0x70, 0x60, "8KB RAM support"),
     ]
 }
 
 # Base friendly names (unpatched)
 friendly_names = {
-    "FBv20A":     "Family BASIC v2.0A",
-    "FBv21A":     "Family BASIC v2.1A",
-    "FBv30":      "Family BASIC v3.0",
-    "FBv30_merge":"Family BASIC v3.0 (PRG+CHR)",
-    "FBv30_iNES": "Family BASIC v3.0 (iNES header)",
-    "FB_CHR":     "Family BASIC CHR ROM"
+    "FBv20A":       "Family BASIC v2.0A",
+    "FBv20A_merge": "Family BASIC v2.0A (PRG+CHR)",
+    "FBv20A_NES2":  "Family BASIC v2.0A (NES 2.0 header)",
+    "FBv21A":       "Family BASIC v2.1A",
+    "FBv21A_merge": "Family BASIC v2.1A (PRG+CHR)",
+    "FBv21A_NES2":  "Family BASIC v2.1A (NES 2.0 header)",
+    "FBv30":        "Family BASIC v3.0",
+    "FBv30_merge":  "Family BASIC v3.0 (PRG+CHR)",
+    "FBv30_NES2":   "Family BASIC v3.0 (NES 2.0 header)",
+    "FB_CHR":       "Family BASIC CHR ROM"
 }
 
 def calculate_crc32(filename):
