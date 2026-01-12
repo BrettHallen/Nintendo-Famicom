@@ -20,6 +20,8 @@ import argparse
 # simply patch the actual values below         #
 ################################################
 KNOWN_CRCS = {
+    "FBv10":        (0x868FCD89, 0x00000000),
+    "FBv10_merge":  (0xF7DB8B5C, 0x00000000),
     "FBv20A_merge": (0xF7606810, 0x00000000),  # Need to dump the ROMs
     "FBv20A_NES2":  (0x300A6746, 0x00000000),  # Need to dump the ROMs
     "FBv21A":       (0xDE34526E, 0x00000000),
@@ -128,6 +130,8 @@ PATCHES = {
 
 # Base friendly names (unpatched)
 friendly_names = {
+    "FBv10":        "Family BASIC v1.0",
+    "FBv10_merge":  "Family BASIC v1.0 (PRG+CHR)",
     "FBv20A":       "Family BASIC v2.0A",
     "FBv20A_merge": "Family BASIC v2.0A (PRG+CHR)",
     "FBv20A_NES2":  "Family BASIC v2.0A (NES 2.0 header)",
