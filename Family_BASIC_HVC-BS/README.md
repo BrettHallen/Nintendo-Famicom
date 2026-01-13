@@ -1,9 +1,9 @@
 # Nintendo Famicom Family BASIC
 
-## Version 1.0
-This is the original version for the Famicom.<br>
+## Version 0 & 1
+These are the original versions for the Famicom.<br>
 
-I don't know much about this but I know [Mr Lurch has done a video](https://youtu.be/f1hPLmRiDNo) with this version.<br>
+I don't know much about this but I know [Mr Lurch has done a video](https://youtu.be/f1hPLmRiDNo) with v1.<br>
 
 ## Version 2.0A
 - PRG: two 16KB (128Kbit) ROMs (RP2D129 0531 and RP2D129 0532) labelled "HVC-FBI-1A" and "HVC-FBI-1B"
@@ -151,3 +151,30 @@ Possible fix - treat line numbers as 16-bit numbers:
 
 ![RENUM bug fix](ROMs/Family_BASIC_v3_RENUM_bug_fix.png)
 
+### [Overflow When Subtracting Zero](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md#overflow-when-subtracting-zero)
+Incorrect overflow (OV) error is raised when -32768-0 is executed.<br>
+```
+                   Sub_WAccumIs32768
+8e40: a5 2d                        lda     zpWParam+1
+8e42: 10 06                        bpl     @errOverfl     ;BUG: produces OV ERROR even if WParam is zero lol
+8e44: 20 fd 8d                     jsr     WParamNegate
+8e47: 4c ac 8e                     jmp     Add
+8e4a: 4c f2 8e     @errOverfl      jmp     ErrorOverflow
+```
+
+![-0 overflow error bug](ROMs/Family_BASIC_v3_-0_OV_bug.png)
+
+Possible fix - raise overflow error only when subtracting positive number (>0)
+```
+                   Sub_WAccumIs32768
+8e40: a5 2d                        lda     zpWParam+1
+8e42: 30 04                        bmi     continue       ;if subtrahend < 0, safe → negate & add
+8e44: 20 fd 8d                     jsr     WParamNegate
+8e47: 4c ac 8e     continue        jmp     Add
+8e4a: 4c f2 8e     @errOverfl      jmp     ErrorOverflow
+```
+- If subtracting negative number ... correct (negate then add)
+- If subtracting zero ... doesn't branch ... falls through to ErrorOverflow
+- If subtracting positive number... falls through to ErrorOverflow
+
+![-0 overflow error bug](ROMs/Family_BASIC_v3_-0_OV_bug_fix.png)
