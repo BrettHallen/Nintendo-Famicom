@@ -55,29 +55,46 @@ PATCH5: lda #>bgGetRam
 
 I am working on a Python script to make this patching of the binary ROM simple:<br>
 ```
-% python3 fb_8kb_patch.py Family_BASIC_v30_PRG_CHR.NES 
+% python3 fb_rom_patcher.py Family_BASIC_v30_PRG_CHR.NES
 
 #############################################
 # Brett's Nintendo Family BASIC ROM patcher #
 # for 8KB RAM Support (Jan 2026)            #
-# Work in progress, 12/JAN/2026             #
+# Work in progress, 13/JAN/2026             #
 #############################################
 
->> Input ROM checksum: 0x55211022
->> Matches Family BASIC v3.0 (iNES header)
+>> Input ROM checksum: 0x6BA08175
+>> Detected: Family BASIC v3.0 (NES 2.0 header)
 
->> Applying patches:
-Patching 0x06B4: 0x6F → 0x7F (8KB RAM support)
-Patching 0x17E8: 0x70 → 0x80 (8KB RAM support)
-Patching 0x2DD9: 0x70 → 0x80 (8KB RAM support)
-Patching 0x31CE: 0x6C → 0x7C (8KB RAM support)
-Patching 0x31DB: 0x6C → 0x7C (8KB RAM support)
-Patching 0x321C: 0x6C → 0x7C (8KB RAM support)
-Patching 0x133E: 0xA0 → 0xA9 (REM bugfix)
+>> Applying single-byte patches:
+Patching 0x000A: 0x60 → 0x70 (NES 2.0 header 4KB->8KB)
+Patching 0x06B4: 0x6F → 0x7F (Increase RAM limit from 0x6C00 to 0x7C00)
+Patching 0x17E8: 0x70 → 0x80 (Increase RAM limit from 0x6C00 to 0x7C00)
+Patching 0x2DD9: 0x70 → 0x80 (Increase RAM limit from 0x6C00 to 0x7C00)
+Patching 0x31CE: 0x6C → 0x7C (Increase RAM limit from 0x6C00 to 0x7C00)
+Patching 0x31DB: 0x6C → 0x7C (Increase RAM limit from 0x6C00 to 0x7C00)
+Patching 0x321C: 0x6C → 0x7C (Increase RAM limit from 0x6C00 to 0x7C00)
+Patching 0x133E: 0xA0 → 0xA9 (REM statement bug fix)
 Patching 0x4F99: 0x30 → 0x31 (Version change to v3.1)
 
->> Patched ROM saved as: Family_BASIC_v30_PRG_CHR_8KB_patch.NES
->> Patched ROM checksum: 0x0BAA6FDA
+>> Applying multi-byte patches:
+Patching 0x0CAD: 0xA5 → 0xA5 (RENUM command bug fix)
+Patching 0x0CAE: 0x7D → 0x7C (RENUM command bug fix)
+Patching 0x0CAF: 0xC5 → 0x38 (RENUM command bug fix)
+Patching 0x0CB0: 0x7F → 0xE5 (RENUM command bug fix)
+Patching 0x0CB1: 0xF0 → 0x7E (RENUM command bug fix)
+Patching 0x0CB2: 0x02 → 0xA5 (RENUM command bug fix)
+Patching 0x0CB3: 0xB0 → 0x7D (RENUM command bug fix)
+Patching 0x0CB4: 0x0C → 0xE5 (RENUM command bug fix)
+Patching 0x0CB5: 0xA5 → 0x7F (RENUM command bug fix)
+Patching 0x0CB6: 0x7C → 0xB0 (RENUM command bug fix)
+Patching 0x0CB7: 0xC5 → 0x09 (RENUM command bug fix)
+Patching 0x0CB8: 0x7E → 0x4C (RENUM command bug fix)
+Patching 0x0CB9: 0xB0 → 0xAB (RENUM command bug fix)
+Patching 0x0CBA: 0x06 → 0x8C (RENUM command bug fix)
+
+>> Patched ROM saved as: Family_BASIC_v30_PRG_CHR_patched.NES
+>> Patched ROM checksum: 0x2FBC0BF8
 >> SUCCESS: Checksum verified
 ```
 ## NES 2.0 Headers
