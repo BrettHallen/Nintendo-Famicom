@@ -30,3 +30,4 @@ Family_BASIC_HVC-BS/KiCad/fp-info-cache
 *.BIN
 *.NES
 Family_BASIC_HVC-BS/ROMs/qnesdisasm.py
+Family_BASIC_HVC-BS/ROMs/Family_BASIC_v21A_PRG.HEX
