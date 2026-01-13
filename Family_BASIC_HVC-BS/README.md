@@ -91,7 +91,7 @@ Required to be prepended to the combined PRG+CHR ROM image to run in an emulator
 There are [several bugs](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md) in v3 that have been identified.<br>
 
 ### [REM Comments Corrupted by Katakana Small Yo (ョ)](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md#rem-comments-corrupted-by-katakana-small-yo-ョ) - TESTED FIX
-As noted by Micah in his [annotated disassembly](https://famibe.addictivecode.org/disassembly/fb3.nes.html):
+As noted by Micah in his [annotated disassembly](https://famibe.addictivecode.org/disassembly/fb3.nes.html):<br>
 Original fault - キョートー　becomes キートー
 ```
 932e: a0 00        TokRemCopyToEnd ldy     #$00                    ;BUG: this should be lda
