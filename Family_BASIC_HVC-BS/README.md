@@ -100,8 +100,8 @@ Original fault - キョートー　becomes キートー
 ```
 Possible fix
 ```
-932e: a5 00        TokRemCopyToEnd lda     #$00                    ;BUG: this should be lda
-9330: 85 99                        sta     zpToken                 ;...or else this should be sty
+932e: a5 00        TokRemCopyToEnd lda     #$00
+9330: 85 99                        sta     zpToken
 9332: 4c c2 92                     jmp     TokCopyUntilTok
 ```
 
