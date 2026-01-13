@@ -86,3 +86,37 @@ Required to be prepended to the combined PRG+CHR ROM image to run in an emulator
 - Family BASIC v2.1 8KB header: 4E 45 53 1A 02 01 03 08 00 00 70 00 00 00 00 23 (?)
 - Family BASIC v3.0 4KB header: 4E 45 53 1A 02 01 03 08 00 00 60 00 00 00 00 23
 - Family BASIC v3.0 8KB header: 4E 45 53 1A 02 01 03 08 00 00 70 00 00 00 00 23 (?)
+
+## Version 3.0 Bugfixes
+There are [several bugs](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md) in v3 that have been identified.<br>
+
+### [REM Comments Corrupted by Katakana Small Yo (ョ)](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md#rem-comments-corrupted-by-katakana-small-yo-ョ) - TESTED FIX
+As noted by Micah in his [annotated disassembly](https://famibe.addictivecode.org/disassembly/fb3.nes.html):
+```
+932e: a0 00        TokRemCopyToEnd ldy     #$00                    ;BUG: this should be lda
+9330: 85 99                        sta     zpToken                 ;...or else this should be sty
+9332: 4c c2 92                     jmp     TokCopyUntilTok
+```
+### [RENUM Can Create Duplicate Line Numbers](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md#renum-can-create-duplicate-line-numbers)
+Original fault:
+```
+                   RENUM_checkNewGeOld
+8c9d: a5 7d                        lda     vZpNewStartLNum+1
+8c9f: c5 7f                        cmp     vZpOldStartLNum+1
+8ca1: f0 02                        beq     @cmpLo            ;is new start lnum (hi byte) > old start lnum (hi byte)?
+8ca3: b0 0c                        bcs     RENUM_argsDone    ;yes -> everything's great
+8ca5: a5 7c        @cmpLo          lda     vZpNewStartLNum   ;else, is new start lnum (lo byte) >= old start lnum (lo byte)?
+8ca7: c5 7e                        cmp     vZpOldStartLNum   ;BUG! Permits high byte lower, as long as low byte is highger!
+8ca9: b0 06                        bcs     RENUM_argsDone    ; This can result in repeated line numbers, and/or lower coming after higher
+8cab: 4c 94 84                     jmp     ErrorIllegalValue
+```
+Possible fix - treat line numbers as 16-bit numbers:
+```
+8c9d: a5 7c                        lda vZpNewStartLNum     ; Load new low byte
+8c9f: 38                           sec                     ; Set carry for subtraction
+8ca0: e5 7e                        sbc vZpOldStartLNum     ; Subtract old low byte
+8ca2: a5 7d                        lda vZpNewStartLNum+1   ; Load new high byte
+8ca4: e5 7f                        sbc vZpOldStartLNum+1   ; Subtract old high byte (with borrow)
+8ca6: b0 09                        bcs RENUM_argsDone      ; If carry set (new >= old), good – jump to $8CB1
+8ca8: 4c ab 8c                     jmp $8cab               ; Else error (Illegal quantity at $8CAB)  
+```
