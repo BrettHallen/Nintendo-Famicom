@@ -134,17 +134,3 @@ Possible fix - treat line numbers as 16-bit numbers:
 
 ![RENUM bug fix](ROMs/Family_BASIC_v3_RENUM_bug_fix.png)
 
-### [Overflow Detection for Multiplication](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md#overflow-detection-for-multiplication)
-Original fault - only checks 3rd byte for overflow, ignoring 4th byte:
-```
-8f38: a5 36     lda zpMulScratch+2   ; only checks byte $36
-8f3a: d0 b6     bne ErrorOverflow    ; branches if non-zero
-8f3c: 60        rts
-```
-Possible fix - check both 3rd & 4th bytes:
-```
-8f38: a5 36     lda zpMulScratch+2   ; load third byte
-8f3a: 05 37     ora zpMulScratch+3   ; OR with fourth byte (sets Z=0 if either ≠0)
-8f3c: d0 b2     bne ErrorOverflow    ; branch if either high byte non-zero
-```
-
