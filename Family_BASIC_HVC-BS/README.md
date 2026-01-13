@@ -91,14 +91,22 @@ Required to be prepended to the combined PRG+CHR ROM image to run in an emulator
 There are [several bugs](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md) in v3 that have been identified.<br>
 
 ### [REM Comments Corrupted by Katakana Small Yo (ョ)](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md#rem-comments-corrupted-by-katakana-small-yo-ョ) - TESTED FIX
-As noted by Micah in his [annotated disassembly](https://famibe.addictivecode.org/disassembly/fb3.nes.html):
+As noted by Micah in his [annotated disassembly](https://famibe.addictivecode.org/disassembly/fb3.nes.html):<br>
+Original fault - キョートー　becomes キートー
 ```
 932e: a0 00        TokRemCopyToEnd ldy     #$00                    ;BUG: this should be lda
 9330: 85 99                        sta     zpToken                 ;...or else this should be sty
 9332: 4c c2 92                     jmp     TokCopyUntilTok
 ```
+Possible fix
+```
+932e: a5 00        TokRemCopyToEnd lda     #$00                    ;BUG: this should be lda
+9330: 85 99                        sta     zpToken                 ;...or else this should be sty
+9332: 4c c2 92                     jmp     TokCopyUntilTok
+```
+
 ### [RENUM Can Create Duplicate Line Numbers](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md#renum-can-create-duplicate-line-numbers)
-Original fault:
+Original fault
 ```
                    RENUM_checkNewGeOld
 8c9d: a5 7d                        lda     vZpNewStartLNum+1
@@ -106,10 +114,13 @@ Original fault:
 8ca1: f0 02                        beq     @cmpLo            ;is new start lnum (hi byte) > old start lnum (hi byte)?
 8ca3: b0 0c                        bcs     RENUM_argsDone    ;yes -> everything's great
 8ca5: a5 7c        @cmpLo          lda     vZpNewStartLNum   ;else, is new start lnum (lo byte) >= old start lnum (lo byte)?
-8ca7: c5 7e                        cmp     vZpOldStartLNum   ;BUG! Permits high byte lower, as long as low byte is highger!
+8ca7: c5 7e                        cmp     vZpOldStartLNum   ;BUG! Permits high byte lower, as long as low byte is higher!
 8ca9: b0 06                        bcs     RENUM_argsDone    ; This can result in repeated line numbers, and/or lower coming after higher
 8cab: 4c 94 84                     jmp     ErrorIllegalValue
 ```
+
+![RENUM bug](ROMs/Family_BASIC_v3_RENUM_bug.png)
+
 Possible fix - treat line numbers as 16-bit numbers:
 ```
 8c9d: a5 7c                        lda vZpNewStartLNum     ; Load new low byte
@@ -120,3 +131,6 @@ Possible fix - treat line numbers as 16-bit numbers:
 8ca6: b0 09                        bcs RENUM_argsDone      ; If carry set (new >= old), good – jump to $8CB1
 8ca8: 4c ab 8c                     jmp $8cab               ; Else error (Illegal quantity at $8CAB)  
 ```
+
+![RENUM bug fix](ROMs/Family_BASIC_v3_RENUM_bug_fix.png)
+
