@@ -110,47 +110,54 @@ Required to be prepended to the combined PRG+CHR ROM image to run in an emulator
 ## Version 3.0 Bugfixes
 There are [several bugs](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md) in v3 that have been identified.<br>
 
-### [REM Comments Corrupted by Katakana Small Yo (ョ)](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md#rem-comments-corrupted-by-katakana-small-yo-ョ) - TESTED FIX
+### [REM Comments Corrupted by Katakana Small Yo (ョ)](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md#rem-comments-corrupted-by-katakana-small-yo-ョ) 
 As noted by Micah in his [annotated disassembly](https://famibe.addictivecode.org/disassembly/fb3.nes.html):<br>
 Original fault - キョートー　becomes キートー
 ```
-932e: a0 00        TokRemCopyToEnd ldy     #$00                    ;BUG: this should be lda
-9330: 85 99                        sta     zpToken                 ;...or else this should be sty
-9332: 4c c2 92                     jmp     TokCopyUntilTok
+932E: A0 00        TokRemCopyToEnd LDY     #$00                    ;BUG: this should be lda
+9330: 85 99                        STA     zpToken                 ;...or else this should be sty
+9332: 4C C2 92                     JMP     TokCopyUntilTok
 ```
+
+![REM bug](ROMs/Family_BASIC_v3_REM_bug.png)
+
 Possible fix
 ```
-932e: a5 00        TokRemCopyToEnd lda     #$00
-9330: 85 99                        sta     zpToken
-9332: 4c c2 92                     jmp     TokCopyUntilTok
+932E: A9 00        TokRemCopyToEnd LDA     #$00                    ;LDY -> LDA
+9330: 85 99                        STA     zpToken
+9332: 4C C2 92                     JMP     TokCopyUntilTok
 ```
+![REM bug fix](ROMs/Family_BASIC_v3_REM_bug_fix.png)
 
 ### [RENUM Can Create Duplicate Line Numbers](https://github.com/micahcowan/fbdasm/blob/main/BUGS.md#renum-can-create-duplicate-line-numbers)
 Original fault
 ```
                    RENUM_checkNewGeOld
-8c9d: a5 7d                        lda     vZpNewStartLNum+1
-8c9f: c5 7f                        cmp     vZpOldStartLNum+1
-8ca1: f0 02                        beq     @cmpLo            ;is new start lnum (hi byte) > old start lnum (hi byte)?
-8ca3: b0 0c                        bcs     RENUM_argsDone    ;yes -> everything's great
-8ca5: a5 7c        @cmpLo          lda     vZpNewStartLNum   ;else, is new start lnum (lo byte) >= old start lnum (lo byte)?
-8ca7: c5 7e                        cmp     vZpOldStartLNum   ;BUG! Permits high byte lower, as long as low byte is higher!
-8ca9: b0 06                        bcs     RENUM_argsDone    ; This can result in repeated line numbers, and/or lower coming after higher
-8cab: 4c 94 84                     jmp     ErrorIllegalValue
+8C9D: A5 7D                        LDA     vZpNewStartLNum+1
+8C9F: C5 7F                        CMP     vZpOldStartLNum+1
+8CA1: F0 02                        BEQ     @cmpLo              ;is new start lnum (hi byte) > old start lnum (hi byte)?
+8CA3: B0 0C                        BCS     RENUM_argsDone      ;yes -> everything's great
+8CA5: A5 7C        @cmpLo          LDA     vZpNewStartLNum     ;else, is new start lnum (lo byte) >= old start lnum (lo byte)?
+8CA7: C5 7E                        CMP     vZpOldStartLNum     ;BUG! Permits high byte lower, as long as low byte is higher!
+8CA9: B0 06                        BCS     RENUM_argsDone      ; This can result in repeated line numbers, and/or lower coming after higher
+8CAB: 4C 94 84                     JMP     ErrorIllegalValue
 ```
 
 ![RENUM bug](ROMs/Family_BASIC_v3_RENUM_bug.png)
 
 Possible fix - treat line numbers as 16-bit numbers:
 ```
-8c9d: a5 7c                        lda vZpNewStartLNum     ; Load new low byte
-8c9f: 38                           sec                     ; Set carry for subtraction
-8ca0: e5 7e                        sbc vZpOldStartLNum     ; Subtract old low byte
-8ca2: a5 7d                        lda vZpNewStartLNum+1   ; Load new high byte
-8ca4: e5 7f                        sbc vZpOldStartLNum+1   ; Subtract old high byte (with borrow)
-8ca6: b0 09                        bcs RENUM_argsDone      ; If carry set (new >= old), good – jump to $8CB1
-8ca8: 4c ab 8c                     jmp $8cab               ; Else error (Illegal quantity at $8CAB)  
+                   RENUM_checkNewGeOld
+8C9D: A5 7C                        LDA     vZpNewStartLNum     ; Load new low byte
+8C9F: 38                           SEC                         ; Set carry for subtraction
+8CA0: E5 7E                        SBC     vZpOldStartLNum     ; Subtract old low byte
+8CA2: A5 7D                        LDA     vZpNewStartLNum+1   ; Load new high byte
+8CA4: E5 7F                        SBC     vZpOldStartLNum+1   ; Subtract old high byte (with borrow)
+8CA6: B0 09                        BCS     RENUM_argsDone      ; If carry set (new >= old), good –> jump to $8CB1
+8CA8: 4C AB 8C                     JMP     $8CAB               ; Else error (Illegal quantity at $8CAB)
+8CAB: 4C 94 84                     JMP     ErrorIllegalValue
 ```
+(replace $8CA8 with 3xNOP and let it fall through to $8CAB?)
 
 ![RENUM bug fix](ROMs/Family_BASIC_v3_RENUM_bug_fix.png)
 
@@ -158,11 +165,11 @@ Possible fix - treat line numbers as 16-bit numbers:
 Incorrect overflow (OV) error is raised when -32768-0 is executed.<br>
 ```
                    Sub_WAccumIs32768
-8e40: a5 2d                        lda     zpWParam+1
-8e42: 10 06                        bpl     @errOverfl     ;BUG: produces OV ERROR even if WParam is zero lol
-8e44: 20 fd 8d                     jsr     WParamNegate
-8e47: 4c ac 8e                     jmp     Add
-8e4a: 4c f2 8e     @errOverfl      jmp     ErrorOverflow
+8E40: A5 2D                        LDA     zpWParam+1
+8E42: 10 06                        BPL     @errOverfl     ;BUG: produces OV ERROR even if WParam is zero lol
+8E44: 20 FD 8D                     JSR     WParamNegate
+8E47: 4C AC 8E                     JMP     Add
+8E4A: 4C F2 8E     @errOverfl      JMP     ErrorOverflow
 ```
 
 ![-0 overflow error bug](ROMs/Family_BASIC_v3_-0_OV_bug.png)
@@ -170,12 +177,13 @@ Incorrect overflow (OV) error is raised when -32768-0 is executed.<br>
 Possible fix - raise overflow error only when subtracting positive number (>0)
 ```
                    Sub_WAccumIs32768
-8e40: a5 2d                        lda     zpWParam+1
-8e42: 30 04                        bmi     continue       ;if subtracting negative number, safe -> negate & add
-8e44: 20 fd 8d                     jsr     WParamNegate
-8e47: 4c ac 8e     continue        jmp     Add
-8e4a: 4c f2 8e     @errOverfl      jmp     ErrorOverflow
+8E40: A5 2D                        LDA     zpWParam+1
+8E42: 30 04                        BMI     continue       ;if subtracting negative number, safe -> negate & add
+8E44: 20 FD 8D                     JSR     WParamNegate
+8E47: 4C AC 8E     continue        JMP     Add
+8E4A: 4C F2 8E     @errOverfl      JMP     ErrorOverflow
 ```
+
 - If subtracting negative number ... correct (negate then add)
 - If subtracting zero ... doesn't branch ... falls through to Add
 - If subtracting positive number... falls through to ErrorOverflow
