@@ -22,6 +22,9 @@ Redesign of the keyboard used with Family BASIC using KiCad.<br>
 
 ## [Family BASIC (HVC-BS)](/Family_BASIC_HVC-BS)
 Designing cartridge with 8KB RAM.<br>
+
+Also includes a Python script to patch the v3 ROM to allow 8KB of RAM and also fix some bugs.<br>
+
 - [Disassembly](https://github.com/micahcowan/fbdasm)
 - [Cartridge schematics](http://cmpslv3.stars.ne.jp/Famic/Fambas.htm)
 - [Leaded Solder's investigation](https://www.leadedsolder.com/2025/03/11/family-basic-space-arcade-game-programming.html)
@@ -31,7 +34,11 @@ Designing cartridge with 8KB RAM.<br>
 ## [3D System (HVC-032)](/3D_System_HVC-032)
 Photos & schematic for the controller unit HVC-032.<br>
 
+![3D system controller](/3D_System_HVC-032/Images/Nintendo_3D_System_HVC-032_PCB_3.png)
+
 ## [Communication Controller (HVC-051)](/Communication_Controller_HVC-051)
 Japanese: 通信コントローラ<br>
 Photos & schematic for the Famicom Network controller.<br>
+
+![Communication Controller](/Communication_Controller_HVC-051/Images/Nintendo_Famicom_Communication_Controller_HVC-051_1.png)
 
