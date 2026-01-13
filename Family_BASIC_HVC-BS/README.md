@@ -92,11 +92,14 @@ Patching 0x0CB7: 0xC5 → 0x09 (RENUM command bug fix)
 Patching 0x0CB8: 0x7E → 0x4C (RENUM command bug fix)
 Patching 0x0CB9: 0xB0 → 0xAB (RENUM command bug fix)
 Patching 0x0CBA: 0x06 → 0x8C (RENUM command bug fix)
+Patching 0x0E52: 0x10 → 0x30 (-0 overflow error bug fix)
+Patching 0x0E53: 0x06 → 0x04 (-0 overflow error bug fix)
 
 >> Patched ROM saved as: Family_BASIC_v30_PRG_CHR_patched.NES
->> Patched ROM checksum: 0x2FBC0BF8
+>> Patched ROM checksum: 0xEFDACFF8
 >> SUCCESS: Checksum verified
 ```
+
 ## NES 2.0 Headers
 Required to be prepended to the combined PRG+CHR ROM image to run in an emulator:
 - Family BASIC v2.1 2KB header: 4E 45 53 1A 02 01 03 08 00 00 50 00 00 00 00 23
@@ -168,7 +171,7 @@ Possible fix - raise overflow error only when subtracting positive number (>0)
 ```
                    Sub_WAccumIs32768
 8e40: a5 2d                        lda     zpWParam+1
-8e42: 30 04                        bmi     continue       ;if subtrahend < 0, safe → negate & add
+8e42: 30 04                        bmi     continue       ;if subtracting negative number, safe -> negate & add
 8e44: 20 fd 8d                     jsr     WParamNegate
 8e47: 4c ac 8e     continue        jmp     Add
 8e4a: 4c f2 8e     @errOverfl      jmp     ErrorOverflow
