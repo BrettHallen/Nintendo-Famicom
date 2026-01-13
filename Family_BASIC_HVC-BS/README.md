@@ -177,7 +177,7 @@ Possible fix - raise overflow error only when subtracting positive number (>0)
 8e4a: 4c f2 8e     @errOverfl      jmp     ErrorOverflow
 ```
 - If subtracting negative number ... correct (negate then add)
-- If subtracting zero ... doesn't branch ... falls through to ErrorOverflow
+- If subtracting zero ... doesn't branch ... falls through to Add
 - If subtracting positive number... falls through to ErrorOverflow
 
 ![-0 overflow error bug](ROMs/Family_BASIC_v3_-0_OV_bug_fix.png)
