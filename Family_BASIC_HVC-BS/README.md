@@ -100,7 +100,56 @@ Patching 0x0E53: 0x06 → 0x04 [-32768-0 overflow error bug fix]
 ```
 
 ## NES 2.0 Headers
-Required to be prepended to the combined PRG+CHR ROM image to run in an emulator:
+Required to be prepended to the combined PRG+CHR ROM image to run in an emulator.<br>
+I've added what *I think* are the correct NES 2.0 headers to my ROMs, and the CRC32 checksum calculation my script checks assumes these.<br>
+```
+% python3 nes_header_read.py Family_BASIC_v30_PRG_CHR.NES 
+
+#################################
+# Brett's NES Header Reader     #
+# Work in progress, 14/JAN/2026 #
+#################################
+
+Format ............................ NES 2.0
+Vs. System PPU variant ............ 0
+Vs. System hardware/protection .... 0
+PRG-ROM size ...................... 32768 bytes
+CHR-ROM size ...................... 8192 bytes
+PRG-RAM (volatile) size ........... 0 bytes
+PRG-NVRAM (battery-backed) size ... 4096 bytes
+CHR-RAM (volatile) size ........... 0 bytes
+CHR-NVRAM (battery-backed) size ... 0 bytes
+Mapper ............................ 0 (NROM)
+Submapper ......................... 0
+Mirroring ......................... Vertical
+Battery-backed .................... True
+Trainer ........................... False
+Four-screen VRAM .................. False
+VS Unisystem ...................... False
+PlayChoice-10 ..................... False
+CPU/PPU Timing .................... RP2C02 (NTSC NES)
+Default expansion device .......... Family BASIC Keyboard plus Famicom Data Recorder
+```
+
+If yours are different and my script rejects your .NES file, just modify the script with the checksum it calculates for your file!<br>
+```
+KNOWN_CRCS = {
+    "FBv10":        (0x868FCD89, 0x00000000), # no 8KB patch planned
+    "FBv10_merge":  (0xF7DB8B5C, 0x00000000), # no 8KB patch planned
+    "FBv10_NES":    (0x30B1840A, 0x00000000), # no 8KB patch planned
+    "FBv20A_merge": (0xF7606810, 0x00000000), # no 8KB patch planned
+    "FBv20A_NES2":  (0x300A6746, 0x00000000), # no 8KB patch planned
+    "FBv21A":       (0xDE34526E, 0x85BDD21B),
+    "FBv21A_merge": (0x895037BC, 0x72C38E25),
+    "FBv21A_NES2":  (0x4E3A38EA, 0x3D43C6D0),
+    "FBv30":        (0x3AAEED3F, 0xC7FD9017),
+    "FBv30_merge":  (0xB2530AFC, 0x933709F7),
+    "FBv30_NES2":   (0x6BA08175, 0xEFDACFF8),
+    "FB_CHR":       (0x11848B93, 0x00000000)
+}
+```
+The checksum for the raw ROM files *should* be correct.<br>
+
 - Family BASIC v2.1 2KB header: 4E 45 53 1A 02 01 03 08 00 00 50 00 00 00 00 23
 - Family BASIC v2.1 8KB header: 4E 45 53 1A 02 01 03 08 00 00 70 00 00 00 00 23 (?)
 - Family BASIC v3.0 4KB header: 4E 45 53 1A 02 01 03 08 00 00 60 00 00 00 00 23
