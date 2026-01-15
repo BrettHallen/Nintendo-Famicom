@@ -7,6 +7,160 @@
 
 import sys
 
+mapper_types = {
+     0:   "NROM",
+     1:   "MMC1 / SxROM",
+     2:   "UxROM",
+     3:   "CNROM",
+     4:   "MMC3 / TxROM / MMC6",
+     5:   "MMC5 / ExROM (expansion audio)",
+     7:   "AxROM",
+     9:   "MMC2 / PxROM",
+     10:  "MMC4 / FxROM",
+     11:  "Color Dreams",
+     13:  "CPROM",
+     15:  "100-in-1 Contra Function 16Multicart",
+     16:  "Bandai EPROM (24C02)",
+     18:  "Jaleco SS8806",
+     19:  "Namco 163 (expansion audio)",
+     21:  "Konami VRC4a / VRC4c",
+     22:  "Konami VRC2a",
+     23:  "Konami VRC2b / VRC4e",
+     24:  "Konami VRC6a (expansion audio)",
+     25:  "Konami VRC4b / VRC4d",
+     26:  "Konami VRC6b (expansion audio)",
+     34:  "BNROM, NINA-001",
+     64:  "RAMBO-1MMC3 clone with extra features",
+     66:  "GxROM, MxROM",
+     68:  "After BurnerROM-based nametables",
+     69:  "FME-7, Sunsoft 5B (the 5B is the FME-7 with expansion sound)",
+     71:  "Camerica/Codemasters (Similar to UNROM)",
+     73:  "VRC3",
+     74:  "Pirate MMC3 derivative (has both CHR ROM and 2KB CHR RAM)",
+     75:  "VRC1",
+     76:  "Namco 109 variant",
+     79:  "NINA-03 / NINA-06",
+     85:  "VRC7 (contains expansion sound)",
+     86:  "JALECO-JF-13",
+     94:  "Senjou no Ookami",
+     105: "NES-EVENT (similar to MMC1)",
+     113: "NINA-03 / NINA-06?? (for multicarts including mapper 79 games)",
+     118: "TxSROM / MMC3 (MMC3 with independent mirroring control)",
+     119: "TQROM  MMC3 (has both CHR ROM and CHR RAM)",
+     159: "Bandai EPROM (24C01)",
+     166: "SUBOR",
+     167: "SUBOR",
+     180: "Crazy Climber  (variation of UNROM, fixed first bank at $8000)",
+     185: "CNROM with protection diodes",
+     192: "Pirate MMC3 derivative (has both CHR ROM and 4KB CHR RAM)",
+     206: "DxROM / Namco 118 / MIMIC-1 (simplified MMC3 predecessor lacking some features)",
+     210: "Namco 175 and 340 (Namco 163 with different mirroring)",
+     228: "Action 52",
+     232: "Camerica / Codemasters Quattro"
+}
+
+def get_mapper_name(m):
+    return mapper_types.get(m, "Unknown")
+
+console_types = {
+    0x00: "Regular NES/Famicom/Dendy",
+    0x01: "Nintendo Vs. System",
+    0x02: "Nintendo Playchoice 10",
+    0x03: "Regular Famiclone, but with CPU that supports Decimal Mode",
+    0x04: "Regular NES/Famicom with EPSM module or plug-through cartridge",
+    0x05: "V.R. Technology VT01 with red/cyan STN palette",
+    0x06: "V.R. Technology VT02",
+    0x07: "V.R. Technology VT03",
+    0x08: "V.R. Technology VT09",
+    0x09: "V.R. Technology VT32",
+    0x0A: "V.R. Technology VT369",
+    0x0B: "UMC UM6578",
+    0x0C: "Famicom Network System"
+}
+
+exp_devices = {
+      0x00: "Unspecified",
+      0x01: "Standard NES/Famicom controllers",
+      0x02: "NES Four Score/Satellite with two additional standard controllers",
+      0x03: "Famicom Four Players Adapter with two additional standard controllers using the 'simple' protocol",
+      0x04: "Vs. System (1P via $4016)",
+      0x05: "Vs. System (1P via $4017)",
+      0x06: "Reserved",
+      0x07: "Vs. Zapper",
+      0x08: "Zapper ($4017)",
+      0x09: "Two Zappers",
+      0x0A: "Bandai Hyper Shot Lightgun",
+      0x0B: "Power Pad Side A",
+      0x0C: "Power Pad Side B",
+      0x0D: "Family Trainer Side A",
+      0x0E: "Family Trainer Side B",
+      0x0F: "Arkanoid Vaus Controller (NES)",
+      0x10: "Arkanoid Vaus Controller (Famicom)",
+      0x11: "Two Vaus Controllers plus Famicom Data Recorder",
+      0x12: "Konami Hyper Shot Controller",
+      0x13: "Coconuts Pachinko Controller",
+      0x14: "Exciting Boxing Punching Bag (Blowup Doll)",
+      0x15: "Jissen Mahjong Controller",
+      0x16: "米澤 (Yonezawa) Party Tap",
+      0x17: "Oeka Kids Tablet",
+      0x18: "Sunsoft Barcode Battler",
+      0x19: "Miracle Piano Keyboard",
+      0x1A: "Pokkun Moguraa Tap-tap Mat (Whack-a-Mole Mat and Mallet)",
+      0x1B: "Top Rider (Inflatable Bicycle)",
+      0x1C: "Double-Fisted (Requires or allows use of two controllers by one player)",
+      0x1D: "Famicom 3D System",
+      0x1E: "Doremikko Keyboard",
+      0x1F: "R.O.B. Gyromite",
+      0x20: "Famicom Data Recorder ('silent' keyboard)",
+      0x21: "ASCII Turbo File",
+      0x22: "IGS Storage Battle Box",
+      0x23: "Family BASIC Keyboard plus Famicom Data Recorder",
+      0x24: "东达 (Dōngdá) PEC Keyboard",
+      0x25: "普澤 (Pǔzé, a.k.a. Bit Corp.) Bit-79 Keyboard",
+      0x26: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard",
+      0x27: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus Macro Winners Mouse",
+      0x28: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus Subor Mouse via $4016",
+      0x29: "SNES Mouse ($4016)",
+      0x2A: "Multicart",
+      0x2B: "Two SNES controllers replacing the two standard NES controllers",
+      0x2C: "RacerMate Bicycle",
+      0x2D: "U-Force",
+      0x2E: "R.O.B. Stack-Up",
+      0x2F: "City Patrolman Lightgun",
+      0x30: "Sharp C1 Cassette Interface",
+      0x31: "Standard Controller with swapped Left-Right/Up-Down/B-A",
+      0x32: "Excalibur Sudoku Pad",
+      0x33: "ABL Pinball",
+      0x34: "Golden Nugget Casino extra buttons",
+      0x35: "科达 (Kēdá) Keyboard",
+      0x36: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus Subor Mouse via $4017",
+      0x37: "Port test controller",
+      0x38: "Bandai Multi Game Player Gamepad buttons",
+      0x39: "Venom TV Dance Mat",
+      0x3A: "LG TV Remote Control",
+      0x3B: "Famicom Network Controller",
+      0x3C: "King Fishing Controller",
+      0x3D: "Croaky Karaoke Controller",
+      0x3E: "科王 (Kēwáng, a.k.a. Kingwon) Keyboard",
+      0x3F: "泽诚 (Zéchéng) Keyboard",
+      0x40: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus L90-rotated PS/2 mouse in $4017",
+      0x41: "PS/2 Keyboard in UM6578 PS/2 port, PS/2 Mouse via $4017",
+      0x42: "PS/2 Mouse in UM6578 PS/2 port",
+      0x43: "裕兴 (Yùxìng) Mouse via $4016",
+      0x44: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus 裕兴 (Yùxìng) Mouse mouse in $4016",
+      0x45: "Gigggle TV Pump",
+      0x46: "步步高 (Bùbùgāo, a.k.a. BBK) Keyboard plus R90-rotated PS/2 mouse in $4017",
+      0x47: "Magical Cooking",
+      0x48: "SNES Mouse ($4017)",
+      0x49: "Zapper ($4016)",
+      0x4A: "Arkanoid Vaus Controller (Prototype)",
+      0x4B: "TV 麻雀 Game (TV Mahjong Game) Controller",
+      0x4C: "麻雀激闘伝説 (Mahjong Gekitou Densetsu) Controller",
+      0x4D: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus X-inverted PS/2 mouse in $4017",
+      0x4E: "IBM PC/XT Keyboard",
+      0x4F: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus Mega Book Mouse"
+}
+
 def decode_size(value, low_byte):
     """
     Decode size for PRG/CHR in NES 2.0 format.
@@ -77,8 +231,13 @@ def main():
     # Determine format
     is_nes_20 = (flags_7 & 0x0C) == 0x08
 
+    print("\n#################################")
+    print("# Brett's NES Header Reader     #")
+    print("# Work in progress, 14/JAN/2026 #")
+    print("#################################\n")
+
     if not is_nes_20:
-        print("\nFormat ........................... iNES (original)")
+        print("Format ........................... iNES (original)")
         mapper = (mapper_high_nibble << 4) | mapper_low_nibble
         prg_rom_size = prg_rom_low * 16384  # bytes
         chr_rom_size = chr_rom_low * 8192   # bytes
@@ -90,12 +249,12 @@ def main():
         print(f"PRG-ROM size ...................... {prg_rom_size} bytes ({prg_rom_low} * 16KB)")
         print(f"CHR-ROM size ...................... {chr_rom_size} bytes ({chr_rom_low} * 8KB)")
         print(f"PRG-RAM size ...................... {prg_ram_size} bytes")
-        print(f"Mapper ............................ {mapper}")
+        print(f"Mapper ............................ {mapper} ({get_mapper_name(mapper)})")
         print(f"Mirroring ......................... {mirroring}")
         print(f"Battery-backed RAM ................ {has_battery}")
         print(f"Trainer ........................... {has_trainer}")
         print(f"Four-screen VRAM .................. {has_four_screen}")
-        print(f"VS Unisystem ...................... {vs_unisystem}")
+        print(f"Vs. Unisystem ..................... {vs_unisystem}")
         print(f"PlayChoice-10 ..................... {playchoice_10}")
         print(f"TV System ......................... {tv_system}")
         if header[9] & 0x02:             
@@ -105,7 +264,7 @@ def main():
             print("!! Warning: Bytes 10-15 are not zero in iNES format:")
             print(" ".join(f"{header[i]:02X}" for i in range(10, 16)))
     else:
-        print("\nFormat ............................ NES 2.0")
+        print("Format ............................ NES 2.0")
         mapper = (mapper_high_nibble << 4) | mapper_low_nibble | ((mapper_upper_low & 0x0F) << 8)
         submapper = mapper_upper_low >> 4
 
@@ -157,109 +316,12 @@ def main():
             extended_console_type = hardware_type & 0x0F
             vs_ppu_variant = None
             vs_protection = None
-            console_types = {
-                0x00: "Regular NES/Famicom/Dendy",
-                0x01: "Nintendo Vs. System",
-                0x02: "Nintendo Playchoice 10",
-                0x03: "Regular Famiclone, but with CPU that supports Decimal Mode",
-                0x04: "Regular NES/Famicom with EPSM module or plug-through cartridge",
-                0x05: "V.R. Technology VT01 with red/cyan STN palette",
-                0x06: "V.R. Technology VT02",
-                0x07: "V.R. Technology VT03",
-                0x08: "V.R. Technology VT09",
-                0x09: "V.R. Technology VT32",
-                0x0A: "V.R. Technology VT369",
-                0x0B: "UMC UM6578",
-                0x0C: "Famicom Network System"
-            }
             print(f"Extended console type: ............ {console_types.get(extended_console_type, 'Unknown')}")
 
         # Misc ROMs
         num_misc_roms = misc_roms & 0x03
 
         # Expansion device
-        exp_devices = {
-              0x00: "Unspecified",
-              0x01: "Standard NES/Famicom controllers",
-              0x02: "NES Four Score/Satellite with two additional standard controllers",
-              0x03: "Famicom Four Players Adapter with two additional standard controllers using the 'simple' protocol",
-              0x04: "Vs. System (1P via $4016)",
-              0x05: "Vs. System (1P via $4017)",
-              0x06: "Reserved",
-              0x07: "Vs. Zapper",
-              0x08: "Zapper ($4017)",
-              0x09: "Two Zappers",
-              0x0A: "Bandai Hyper Shot Lightgun",
-              0x0B: "Power Pad Side A",
-              0x0C: "Power Pad Side B",
-              0x0D: "Family Trainer Side A",
-              0x0E: "Family Trainer Side B",
-              0x0F: "Arkanoid Vaus Controller (NES)",
-              0x10: "Arkanoid Vaus Controller (Famicom)",
-              0x11: "Two Vaus Controllers plus Famicom Data Recorder",
-              0x12: "Konami Hyper Shot Controller",
-              0x13: "Coconuts Pachinko Controller",
-              0x14: "Exciting Boxing Punching Bag (Blowup Doll)",
-              0x15: "Jissen Mahjong Controller",
-              0x16: "米澤 (Yonezawa) Party Tap",
-              0x17: "Oeka Kids Tablet",
-              0x18: "Sunsoft Barcode Battler",
-              0x19: "Miracle Piano Keyboard",
-              0x1A: "Pokkun Moguraa Tap-tap Mat (Whack-a-Mole Mat and Mallet)",
-              0x1B: "Top Rider (Inflatable Bicycle)",
-              0x1C: "Double-Fisted (Requires or allows use of two controllers by one player)",
-              0x1D: "Famicom 3D System",
-              0x1E: "Doremikko Keyboard",
-              0x1F: "R.O.B. Gyromite",
-              0x20: "Famicom Data Recorder ('silent' keyboard)",
-              0x21: "ASCII Turbo File",
-              0x22: "IGS Storage Battle Box",
-              0x23: "Family BASIC Keyboard plus Famicom Data Recorder",
-              0x24: "东达 (Dōngdá) PEC Keyboard",
-              0x25: "普澤 (Pǔzé, a.k.a. Bit Corp.) Bit-79 Keyboard",
-              0x26: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard",
-              0x27: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus Macro Winners Mouse",
-              0x28: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus Subor Mouse via $4016",
-              0x29: "SNES Mouse ($4016)",
-              0x2A: "Multicart",
-              0x2B: "Two SNES controllers replacing the two standard NES controllers",
-              0x2C: "RacerMate Bicycle",
-              0x2D: "U-Force",
-              0x2E: "R.O.B. Stack-Up",
-              0x2F: "City Patrolman Lightgun",
-              0x30: "Sharp C1 Cassette Interface",
-              0x31: "Standard Controller with swapped Left-Right/Up-Down/B-A",
-              0x32: "Excalibur Sudoku Pad",
-              0x33: "ABL Pinball",
-              0x34: "Golden Nugget Casino extra buttons",
-              0x35: "科达 (Kēdá) Keyboard",
-              0x36: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus Subor Mouse via $4017",
-              0x37: "Port test controller",
-              0x38: "Bandai Multi Game Player Gamepad buttons",
-              0x39: "Venom TV Dance Mat",
-              0x3A: "LG TV Remote Control",
-              0x3B: "Famicom Network Controller",
-              0x3C: "King Fishing Controller",
-              0x3D: "Croaky Karaoke Controller",
-              0x3E: "科王 (Kēwáng, a.k.a. Kingwon) Keyboard",
-              0x3F: "泽诚 (Zéchéng) Keyboard",
-              0x40: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus L90-rotated PS/2 mouse in $4017",
-              0x41: "PS/2 Keyboard in UM6578 PS/2 port, PS/2 Mouse via $4017",
-              0x42: "PS/2 Mouse in UM6578 PS/2 port",
-              0x43: "裕兴 (Yùxìng) Mouse via $4016",
-              0x44: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus 裕兴 (Yùxìng) Mouse mouse in $4016",
-              0x45: "Gigggle TV Pump",
-              0x46: "步步高 (Bùbùgāo, a.k.a. BBK) Keyboard plus R90-rotated PS/2 mouse in $4017",
-              0x47: "Magical Cooking",
-              0x48: "SNES Mouse ($4017)",
-              0x49: "Zapper ($4016)",
-              0x4A: "Arkanoid Vaus Controller (Prototype)",
-              0x4B: "TV 麻雀 Game (TV Mahjong Game) Controller",
-              0x4C: "麻雀激闘伝説 (Mahjong Gekitou Densetsu) Controller",
-              0x4D: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus X-inverted PS/2 mouse in $4017",
-              0x4E: "IBM PC/XT Keyboard",
-              0x4F: "小霸王 (Xiǎobàwáng, a.k.a. Subor) Keyboard plus Mega Book Mouse"
-        }
         exp_device_str = exp_devices.get(expansion_device, "Unknown")
 
         # Print decoded info
@@ -269,7 +331,7 @@ def main():
         print(f"PRG-NVRAM (battery-backed) size ... {prg_nvram_size} bytes")
         print(f"CHR-RAM (volatile) size ........... {chr_ram_size} bytes")
         print(f"CHR-NVRAM (battery-backed) size ... {chr_nvram_size} bytes")
-        print(f"Mapper ............................ {mapper}")
+        print(f"Mapper ............................ {mapper} ({get_mapper_name(mapper)})")
         print(f"Submapper ......................... {submapper}")
         print(f"Mirroring ......................... {mirroring}")
         print(f"Battery-backed .................... {has_battery}")
