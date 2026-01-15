@@ -139,13 +139,13 @@ KNOWN_CRCS = {
     "FBv10_NES":    (0x30B1840A, 0x00000000), # no 8KB patch planned
     "FBv20A_merge": (0xF7606810, 0x00000000), # no 8KB patch planned
     "FBv20A_NES2":  (0x300A6746, 0x00000000), # no 8KB patch planned
-    "FBv21A":       (0xDE34526E, 0x85BDD21B),
-    "FBv21A_merge": (0x895037BC, 0x72C38E25),
-    "FBv21A_NES2":  (0x4E3A38EA, 0x3D43C6D0),
-    "FBv30":        (0x3AAEED3F, 0xC7FD9017),
-    "FBv30_merge":  (0xB2530AFC, 0x933709F7),
-    "FBv30_NES2":   (0x6BA08175, 0xEFDACFF8),
-    "FB_CHR":       (0x11848B93, 0x00000000)
+    "FBv21A":       (0xDE34526E, 0x85BDD21B), # PRG
+    "FBv21A_merge": (0x895037BC, 0x72C38E25), # PRG+CHR
+    "FBv21A_NES2":  (0x4E3A38EA, 0x3D43C6D0), # PRG+CHR+NES header
+    "FBv30":        (0x3AAEED3F, 0xC7FD9017), # PRG
+    "FBv30_merge":  (0xB2530AFC, 0x933709F7), # PRG+CHR
+    "FBv30_NES2":   (0x6BA08175, 0xEFDACFF8), # PRG+CHR+NES header
+    "FB_CHR":       (0x11848B93, 0x00000000)  # CHR
 }
 ```
 The checksum for the raw ROM files *should* be correct.<br>
