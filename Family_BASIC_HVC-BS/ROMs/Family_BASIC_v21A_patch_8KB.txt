@@ -8,41 +8,46 @@
 // Modified by Brett Hallen, Jan 2026 (corrections, comments, offsets)
 
 // Change JSR $8131 to JMP $80F0
-　　40BC-40BE: 20 31 81 -> 4C F0 80
+　　00BC-00BE: 20 31 81 -> 4C F0 80
 
 // Change JMP $80AD to JMP $B5AF
-　　40EE-40EF: AD 80    -> AF B5
+　　00EE-00EF: AD 80    -> AF B5
 
 // Increase RAM limit from $6FFF to $7FFF
-　　40DB     : 70       -> 60
-　　40E0     : 70       -> 60
-　　40E7     : 70       -> 60
-　　40EC     : 70       -> 60
-　　40FD     : 70       -> 60
-　　4104     : 70       -> 60
-　　410B     : 70       -> 60
-　　4110     : 70       -> 60
-　　4118     : 70       -> 60
-　　4210     : 70       -> 60
-　　4213     : 70       -> 60
-　　438D     : 70       -> 60
-　　4390     : 70       -> 60
-　　4393     : 70       -> 60
-　　43A5     : 70       -> 60
+　　00DB     : 70       -> 60
+　　00E0     : 70       -> 60
+　　00E7     : 70       -> 60
+　　00EC     : 70       -> 60
+　　00FD     : 70       -> 60
+　　0104     : 70       -> 60
+　　010B     : 70       -> 60
+　　0110     : 70       -> 60
+　　0118     : 70       -> 60
+　　0210     : 70       -> 60
+　　0213     : 70       -> 60
+　　038D     : 70       -> 60
+　　0390     : 70       -> 60
+　　0393     : 70       -> 60
+　　03A5     : 70       -> 60
 
-　　4570     : 77       -> 7F
-　　525A     : 78       -> 80
+　　0570     : 77       -> 7F
+　　025A     : 78       -> 80
 
 // Change CLI to NOP
-　　4220     : 58       -> EA
+　　0220     : 58       -> EA
 
 // Change command from "SYSTEM" to "BGTOOL"
-　　0151-0156: 53 59 53 54 45 4D ->  42 47 54 4F 4F 4C
+　　4151-4156: 53 59 53 54 45 4D ->  42 47 54 4F 4F 4C
 
 // Version change from "A" to "D"
-　　0367     : 41       ->  44
+　　4367     : 41       ->  44
 
-// Reset Patch 0 
+	PATCH_0: load = SIDE1A, start = $219e+$00bc, type = overwrite;
+		jsr $9228 ; extra patches
+		jsr $814b ; for disk saving
+		jmp $80f0 ; replaces jsr $8131
+
+// Reset Patch 0   4427
 // JSR $CD94 removed with NOPs
 　　0427-0429: 20 94 CD -> EA EA EA
 
