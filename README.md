@@ -4,6 +4,8 @@ Information regarding the Nintendo Family Computer (ニンテンドーファミ�
 ## [Dual PPU for Famicom](/ANES_decrazyo)
 An implementation of [decrazyo's design](https://github.com/decrazyo/anes) for the NES, creating the Advanced Nintendo Entertainment System or "ANES".
 
+![Dual PPU for FC](/ANES_decrazyo/AFC_DualPPU_Prototype_3D.png)
+
 ## [Original Schematics](/Archive_Schematics)
 Copy of the schematics from [Archive](https://archive.org/details/fc-factory-cpu-schematic-scan).
 
